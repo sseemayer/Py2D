@@ -1,6 +1,6 @@
 import math
 
-class Vector:
+class Vector(object):
 
 	def __init__(self, x, y):
 		self.x = x
@@ -20,7 +20,7 @@ class Vector:
 			return self.normalize()
 		else:
 			return self
-
+	
 	def clone(self):
 		return Vector(self.x, self.y)
 
@@ -57,7 +57,20 @@ class Vector:
 	def __hash__(self):
 		return hash("%.4f %.4f" % (self.x, self.y))
 
-class Polygon:
+	def __getitem__(self, key):
+		if key == 0: return self.x
+		elif key == 1: return self.y
+		else: raise KeyError('Invalid key: %s. Valid keys are 0 and 1 for x and y' % key)
+
+	def __setitem__(self, key, value):
+		if key == 0: self.x = value
+		elif key == 1: self.y = value
+		else: raise KeyError('Invalid key: %s. Valid keys are 0 and 1 for x and y' % key)
+
+	length = property(get_length, None, None)
+	length_squared = property(get_length_squared, None, None)
+
+class Polygon(object):
 
 	def __init__(self):
 		self.points = []
@@ -73,11 +86,17 @@ class Polygon:
 
 		return p
 
+	@staticmethod
+	def from_pointlist(points):
+		p = Polygon()
+		p.points = points
+		return p
+
 	def add_point(self, point):
-		self.points += [point]
+		self.points.append(point)
 
 	def add_points(self, points):
-		self.points += points
+		self.points.extend(points)
 
 	def get_centerpoint(self):
 		xes = [p.x for p in self.points]
@@ -100,7 +119,31 @@ class Polygon:
 		return "Polygon [%s]" % ", ".join(pts)
 
 
-	
+	def __getitem__(self, key):
+		return self.points[key]
+
+	def __setitem__(self, key, value):
+		self.points[key] = value
+
+	def __delitem__(self, key):
+		del self.points[key]
+
+	def __len__(self):
+		return len(self.points)
+
+	def __eq__(self, other):
+		if not isinstance(other, Polygon): return False
+		return self.points == other.points
+
+	def clone(self):
+		poly = Polygon()
+		poly.points = [ p for p in self.points ]
+		return poly
+
+	append = add_point
+	extend = add_points
+
+	center = property(get_centerpoint)
 
 def __intersect_line_line_u(p1, p2, q1, q2):
 
@@ -169,6 +212,9 @@ def intersect_linesegs_lineseg(segs, p1, p2):
 	
 	return intersect_points
 
+def intersect_poly_poly(poly_points1, poly_points2):
+	return intersect_linesegs_linesegs(zip(poly_points1[0:], poly_points1[1:]) + [(poly_points1[-1], poly_points1[0])], zip(poly_points2[0:], poly_points2[1:]) + [(poly_points2[-1], poly_points2[0])])
+
 def intersect_linesegs_linesegs(segs1, segs2):
 	intersect_points = []
 	for ls1 in segs1:
@@ -212,7 +258,7 @@ def distance_point_lineseg_squared(p, a, b):
 	bp_squared = (p - b).get_length_squared()
 	ap_prime = a * b
 	
-	perpendicular_squared = ap_squared - ap_prime * ap_prime
+	perpendicular_squared = abs( ap_squared - ap_prime * ap_prime )
 
 	return min(ap_squared, bp_squared, perpendicular_squared)
 
