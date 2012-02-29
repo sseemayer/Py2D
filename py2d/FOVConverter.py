@@ -1,6 +1,6 @@
 from Math import *
 
-def convert_tilemap_generic(width, height, blocking_function, tile_width, tile_height):
+def convert_tilemap(width, height, blocking_function, tile_width, tile_height):
 	"""Convert a tile-based map file to obstructors for FOV calculation
 	
 	Arguments:
@@ -100,7 +100,6 @@ def convert_tilemap_generic(width, height, blocking_function, tile_width, tile_h
 				for y in range(height):
 					if clusters[x][y] == cluster:
 						return x,y
-			return None
 		
 		start_x, start_y = get_startpos()
 
@@ -207,23 +206,4 @@ def convert_tilemap_generic(width, height, blocking_function, tile_width, tile_h
 		cluster_outlines += [cluster_outline(cluster)]
 
 	return cluster_outlines
-
-
-if __name__ == '__main__':
-
-	map_data = [[1,1,1,1,0,0,0,0],
-		    [1,0,0,1,0,0,1,0],
-		    [1,0,1,1,0,1,1,1],
-		    [1,0,1,1,0,0,1,0],
-		    [1,1,1,0,0,0,1,0],
-		    [0,0,0,0,0,1,1,1],
-		    [0,1,1,1,0,0,1,0]]
-
-	for line in map_data:
-		print line
-
-	outlines = convert_tilemap_generic(len(map_data), len(map_data[0]), lambda x,y: map_data[x][y], 1,1)
-
-	for outline in outlines: 
-		print outline
 
