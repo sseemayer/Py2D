@@ -1,5 +1,5 @@
-Py2D game library
-=================
+Py2D game utility library
+=========================
 
 This is in very early development, supported features so far are:
 
