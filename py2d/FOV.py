@@ -3,7 +3,25 @@
 import Math
 
 class Vision:
-	"""Class for representing a polygonal field of vision (FOV)."""
+	"""Class for representing a polygonal field of vision (FOV).
+	
+	It requires a list of obstructors, given as line strips made of lists of vectors (i.e. we have a list of lists of vectors).
+	The vision polygon will be cached as long as the eye position and obstructors don't change. 
+
+		>>> obs = [[ Math.Vector(2,4), Math.Vector(4, 1), Math.Vector(7, -2) ],
+		...        [ Math.Vector(1,-2), Math.Vector(6, -3) ],
+		...	   [ Math.Vector(2.5,5), Math.Vector(3, 4) ]]
+		>>> radius = 20
+		>>> eye = Math.Vector(0,0)
+		>>> boundary = Math.Polygon.regular(eye, radius, 4)
+		>>> v = Vision(obs)
+		>>> poly = v.get_vision(eye, radius, boundary)
+		>>> poly.points[0:6]
+		[Vector(4.000000, 1.000000), Vector(2.000000, 4.000000), Vector(2.500000, 5.000000), Vector(0.000000, 20.000000), Vector(-20.000000, 0.000000), Vector(-0.000000, -20.000000)]
+		>>> poly.points[6:]
+		[Vector(6.666667, -13.333333), Vector(1.000000, -2.000000), Vector(6.000000, -3.000000), Vector(13.333333, -6.666667), Vector(15.555556, -4.444444), Vector(7.000000, -2.000000)]
+	"""
+
 	def __init__(self, obstructors):
 		"""Create a new vision object.
 
@@ -12,10 +30,10 @@ class Vision:
 		"""
 
 		self.set_obstructors(obstructors)
-		self.debug = False
+		#self.debug = False
 
 
-		self.debug_points = []
+		#self.debug_points = []
 
 	def set_obstructors(self, obstructors):
 		"""Set new obstructor data for the Vision object.
@@ -26,10 +44,7 @@ class Vision:
 		@param obstructors: A list of obstructors. Obstructors are a list of vectors, so this should be a list of lists.
 		"""
 		def flatten_list(l):
-			if l:
-				return reduce(lambda x,y: x+y, l)
-			else:
-				return []
+			return reduce(lambda x,y: x+y, l)
 
 		# concatenate list of lists of vectors to a list of vectors
 		self.obs_points = flatten_list(obstructors)			
@@ -63,12 +78,12 @@ class Vision:
 
 		WARNING: You should only call this if you want to re-calculate the vision polygon for some reason. 
 		
-		For normal usage, use get_vision instead!
+		For normal usage, use L{get_vision} instead!
 		"""
 
 		self.cached_radius = radius
 		self.cached_position = eye
-		self.debug_points = []
+		#self.debug_points = []
 
 		radius_squared = radius * radius
 
@@ -101,7 +116,7 @@ class Vision:
 			return True
 
 		def lineseg_in_radius(seg):
-			return distance_point_lineseg_squared(eye, seg[0], seg[1]) <= radius_squared
+			return Math.distance_point_lineseg_squared(eye, seg[0], seg[1]) <= radius_squared
 
 		obs_segs = filter(lineseg_in_radius, self.obs_segs)
 
@@ -111,8 +126,8 @@ class Vision:
 		# find all obstructors intersecting the vision polygon
 		boundary_intersection_points = Math.intersect_linesegs_linesegs(obs_segs, zip(boundary.points, boundary.points[1:]) + [(boundary.points[-1], boundary.points[0])])
 		
-		if self.debug: self.debug_points += [(p, 0xFF0000) for p in visible_points]
-		if self.debug: self.debug_points += [(p, 0x00FFFF) for p in boundary_intersection_points]
+		#if self.debug: self.debug_points += [(p, 0xFF0000) for p in visible_points]
+		#if self.debug: self.debug_points += [(p, 0x00FFFF) for p in boundary_intersection_points]
 
 		# filter boundary_intersection_points to only include visible points 
 		# - need extra code here to handle points on obstructors!
@@ -146,7 +161,7 @@ class Vision:
 				# find closest intersection point and add it to point list
 				closest_intersection = closest_points(intersections, eye)[0]
 
-				if self.debug: print "%d prev: %s current: %s next: %s" % (i, p, c, n)
+				#if self.debug: print "%d prev: %s current: %s next: %s" % (i, p, c, n)
 
 				if (eye - closest_intersection).get_length_squared() > radius_squared:
 					closest_intersection = (closest_intersection - eye).normalize() * radius + eye
@@ -155,7 +170,7 @@ class Vision:
 				sio_cn = segment_in_obs((c,n))
 
 				if not sio_pc:
-					if self.debug: print "insert %s at %d" % (closest_intersection, i)
+					#if self.debug: print "insert %s at %d" % (closest_intersection, i)
 					poly.points.insert(i, closest_intersection)
 					i+=1
 
@@ -163,23 +178,23 @@ class Vision:
 					# We might have wrongly inserted a point before because this insert was missing
 					# and therefore the current-next check (incorrectly) yielded false. remove the point again
 					if segment_in_obs((poly.points[i-3], poly.points[i-1])):
-						if self.debug: print "Fixing erroneous insert at %d" % (i-2)
+						#if self.debug: print "Fixing erroneous insert at %d" % (i-2)
 						poly.points.remove(poly.points[i-2])
 						i-=1
 
 				elif sio_pc and not sio_cn:
 					
-					if self.debug: print "insert %s at %d (+)" % (closest_intersection, i+1)
+					#if self.debug: print "insert %s at %d (+)" % (closest_intersection, i+1)
 					poly.points.insert(i+1, closest_intersection)
 					i+=1
 
-				elif self.debug:
-					print "no insert at %i" % i
+				#elif self.debug:
+				#	print "no insert at %i" % i
 
 
 			i+=1
 
-			if self.debug: print "%d %d" % (i, len(poly.points))
+			#if self.debug: print "%d %d" % (i, len(poly.points))
 
 
 		# handle border case where polypoint at 0 is wrongfully inserted before because poly was not finished at -1

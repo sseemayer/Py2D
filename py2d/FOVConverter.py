@@ -12,8 +12,11 @@ def convert_tilemap(width, height, blocking_function, tile_width, tile_height):
 	...	        [0,0,0,0,0,1,1,1],
 	...             [0,0,0,0,0,0,0,0]]
 	>>> blocking_func = lambda x,y: map_data[x][y]
-	>>> convert_tilemap( len(map_data), len(map_data[0]), blocking_func, 1, 1)
-	[[Vector(0.000000, 0.000000), Vector(5.000000, 0.000000), Vector(5.000000, 2.000000), Vector(3.000000, 2.000000), Vector(3.000000, 4.000000), Vector(0.000000, 4.000000), Vector(0.000000, 0.000000)], [Vector(1.000000, 5.000000), Vector(6.000000, 5.000000), Vector(6.000000, 8.000000), Vector(1.000000, 8.000000), Vector(1.000000, 5.000000)], [Vector(0.000000, 4.000000), Vector(3.000000, 4.000000), Vector(3.000000, 2.000000), Vector(5.000000, 2.000000), Vector(5.000000, 0.000000), Vector(7.000000, 0.000000), Vector(7.000000, 8.000000), Vector(6.000000, 8.000000), Vector(6.000000, 5.000000), Vector(1.000000, 5.000000), Vector(1.000000, 8.000000), Vector(0.000000, 8.000000), Vector(0.000000, 4.000000)]]
+	>>> obstructors = convert_tilemap( len(map_data), len(map_data[0]), blocking_func, 1, 1)
+	>>> print "\\n".join(map(str, obstructors))
+	[Vector(0.000000, 0.000000), Vector(5.000000, 0.000000), Vector(5.000000, 2.000000), Vector(3.000000, 2.000000), Vector(3.000000, 4.000000), Vector(0.000000, 4.000000), Vector(0.000000, 0.000000)]
+	[Vector(1.000000, 5.000000), Vector(6.000000, 5.000000), Vector(6.000000, 8.000000), Vector(1.000000, 8.000000), Vector(1.000000, 5.000000)]
+	[Vector(0.000000, 4.000000), Vector(3.000000, 4.000000), Vector(3.000000, 2.000000), Vector(5.000000, 2.000000), Vector(5.000000, 0.000000), Vector(7.000000, 0.000000), Vector(7.000000, 8.000000), Vector(6.000000, 8.000000), Vector(6.000000, 5.000000), Vector(1.000000, 5.000000), Vector(1.000000, 8.000000), Vector(0.000000, 8.000000), Vector(0.000000, 4.000000)]
 
 
 	@type width: int
