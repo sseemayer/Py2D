@@ -1,17 +1,34 @@
-from Math import *
+"""Conversion of map data structures to obstructor data"""
+import Math
 
 def convert_tilemap(width, height, blocking_function, tile_width, tile_height):
-	"""Convert a tile-based map file to obstructors for FOV calculation
-	
-	Arguments:
-	
-	width			-- The width of the map in tiles
-	height			-- The height of the map in tiles
+	"""Convert a tile-based map file to obstructors for FOV calculation.
 
-	blocking_function	-- The function used to determine whether the tile at x,y blocks light. e.g.: lambda x,y: map.get_tile(x,y).block_light
+	>>> map_data = [[1,1,1,1,0,0,0,0],
+	...	        [1,1,1,1,0,1,1,1],
+	...	        [1,1,1,1,0,1,1,1],
+	...    	        [1,1,0,0,0,1,1,1],
+	...	        [1,1,0,0,0,1,1,1],
+	...	        [0,0,0,0,0,1,1,1],
+	...             [0,0,0,0,0,0,0,0]]
+	>>> blocking_func = lambda x,y: map_data[x][y]
+	>>> convert_tilemap( len(map_data), len(map_data[0]), blocking_func, 1, 1)
+	[[Vector(0.000000, 0.000000), Vector(5.000000, 0.000000), Vector(5.000000, 2.000000), Vector(3.000000, 2.000000), Vector(3.000000, 4.000000), Vector(0.000000, 4.000000), Vector(0.000000, 0.000000)], [Vector(1.000000, 5.000000), Vector(6.000000, 5.000000), Vector(6.000000, 8.000000), Vector(1.000000, 8.000000), Vector(1.000000, 5.000000)], [Vector(0.000000, 4.000000), Vector(3.000000, 4.000000), Vector(3.000000, 2.000000), Vector(5.000000, 2.000000), Vector(5.000000, 0.000000), Vector(7.000000, 0.000000), Vector(7.000000, 8.000000), Vector(6.000000, 8.000000), Vector(6.000000, 5.000000), Vector(1.000000, 5.000000), Vector(1.000000, 8.000000), Vector(0.000000, 8.000000), Vector(0.000000, 4.000000)]]
 
-	tile_width		-- The width of a single tile
-	tile_height		-- The height of a single tile
+
+	@type width: int
+	@param width: The width of the map in tiles
+	@type height: int
+	@param height: The height of the map in tiles
+
+	@type blocking_function: function(x,y)
+	@param blocking_function: The function with parameters x,y used to determine whether the tile at x,y blocks light. e.g.: C{lambda x,y: map.get_tile(x,y).block_light}
+
+	@type tile_width: float
+	@param tile_width: The width of a single tile
+
+	@type tile_height: float
+	@param tile_height: The height of a single tile
 	"""
 
 
@@ -111,7 +128,7 @@ def convert_tilemap(width, height, blocking_function, tile_width, tile_height):
 		direction = 0
 
 		x, y = start_x, start_y
-		outline = [Vector(x * tile_width, y * tile_height)]
+		outline = [Math.Vector(x * tile_width, y * tile_height)]
 
 		while True:
 
@@ -130,13 +147,13 @@ def convert_tilemap(width, height, blocking_function, tile_width, tile_height):
 					# we have a cluster member at the top. 
 					# go up now and add top-left corner to outline
 					direction = 3
-					outline += [Vector((x) * tile_width, (y) * tile_height)]
+					outline.append(Math.Vector((x) * tile_width, (y) * tile_height))
 					y -= 1;
 				else:
 					# we have no more cluster members to the right. 
 					# go down now and add top-right corner to outline
 					direction = 1
-					outline += [Vector((x+1) * tile_width, (y) * tile_height)]
+					outline.append(Math.Vector((x+1) * tile_width, (y) * tile_height))
 
 			elif direction == 1:
 				# we are going down at the right of the cluster.
@@ -148,13 +165,13 @@ def convert_tilemap(width, height, blocking_function, tile_width, tile_height):
 					# we have a cluster member to the right.
 					# go right now and add top-right corner to outline
 					direction = 0
-					outline += [Vector((x+1) * tile_width, (y) * tile_height)]
+					outline.append(Math.Vector((x+1) * tile_width, (y) * tile_height))
 					x += 1;
 				else:
 					# we have no more cluster members at the bottom.
 					# go left now and add bottom-right corner to outline
 					direction = 2
-					outline += [Vector((x+1) * tile_width, (y+1) * tile_height)]
+					outline.append(Math.Vector((x+1) * tile_width, (y+1) * tile_height))
 
 			elif direction == 2:
 				# we are going left at the bottom of the cluster.
@@ -166,13 +183,13 @@ def convert_tilemap(width, height, blocking_function, tile_width, tile_height):
 					# we have a cluster member at the bottom.
 					# go down now and add bottom-right corner to outline
 					direction = 1
-					outline += [Vector((x+1) * tile_width, (y+1) * tile_height)];
+					outline.append(Math.Vector((x+1) * tile_width, (y+1) * tile_height))
 					y += 1;
 				else:
 					# we have no more cluster members at the left.
 					# go up now and add bottom-left corner to outline
 					direction = 3
-					outline += [Vector((x) * tile_width, (y+1) * tile_height)]
+					outline.append(Math.Vector((x) * tile_width, (y+1) * tile_height))
 			else:
 				# we are going up at the left of the cluster.
 
@@ -183,13 +200,13 @@ def convert_tilemap(width, height, blocking_function, tile_width, tile_height):
 					# we have a cluster member to the left.
 					# go left now and add bottom-left corner to outline
 					direction = 2
-					outline += [Vector((x) * tile_width, (y+1) * tile_height)]
+					outline.append(Math.Vector((x) * tile_width, (y+1) * tile_height))
 					x -= 1;
 				else:
 					# we have no more cluster members at the top.
 					# go right now and add top-left corner to outline
 					direction = 0
-					outline += [Vector((x) * tile_width, (y) * tile_height)]
+					outline.append(Math.Vector((x) * tile_width, (y) * tile_height))
 			
 			# find if we've made a full loop and have come back to the start
 			if direction == 0 and x == start_x and y == start_y:

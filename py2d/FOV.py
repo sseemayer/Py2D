@@ -1,9 +1,30 @@
-from Math import *
+"""Calculation of polygonal Field of View (FOV)"""
 
-class Vision(object):
+import Math
 
+class Vision:
+	"""Class for representing a polygonal field of vision (FOV)."""
 	def __init__(self, obstructors):
+		"""Create a new vision object.
 
+		@type obstructors: list
+		@param obstructors: A list of obstructors. Obstructors are a list of vectors, so this should be a list of lists.
+		"""
+
+		self.set_obstructors(obstructors)
+		self.debug = False
+
+
+		self.debug_points = []
+
+	def set_obstructors(self, obstructors):
+		"""Set new obstructor data for the Vision object.
+	
+		This will also cause the vision polygon to become invalidated, resulting in a re-calculation the next time you access it.
+
+		@type obstructors: list
+		@param obstructors: A list of obstructors. Obstructors are a list of vectors, so this should be a list of lists.
+		"""
 		def flatten_list(l):
 			if l:
 				return reduce(lambda x,y: x+y, l)
@@ -20,12 +41,16 @@ class Vision(object):
 		self.cached_position = None
 		self.cached_radius = None
 
-		self.debug = False
-
-
-		self.debug_points = []
-
 	def get_vision(self, eye, radius, boundary):
+		"""Get a vision polygon for a given eye position and boundary Polygon.
+		
+		@type eye: Vector
+		@param eye: The position of the viewer (normally the center of the boundary polygon)
+		@type radius: float
+		@param radius: The maximum vision radius (normally the radius of the boundary polygon)
+		@type boundary: Polygon
+		@param boundary: The boundary polygon that describes the maximal field of vision
+		"""
 
 		if self.cached_vision == None or (self.cached_position - eye).get_length_squared() > 1:
 			self.calculate(eye, radius, boundary)
@@ -33,11 +58,13 @@ class Vision(object):
 		return self.cached_vision
 
 
-	def debug_point(self, point, color=0xffffff):
-		self.debug_points += [(point, color)]
-
-
 	def calculate(self, eye, radius, boundary):
+		"""Re-calculate the vision polygon.
+
+		WARNING: You should only call this if you want to re-calculate the vision polygon for some reason. 
+		
+		For normal usage, use get_vision instead!
+		"""
 
 		self.cached_radius = radius
 		self.cached_position = eye
@@ -67,7 +94,7 @@ class Vision(object):
 			if (eye - p).get_length_squared() > radius_squared and p not in bpoints: return False
 
 			for line_segment in obs_segs:
-				if check_intersect_lineseg_lineseg( eye, p, line_segment[0], line_segment[1]): 
+				if Math.check_intersect_lineseg_lineseg( eye, p, line_segment[0], line_segment[1]): 
 					if line_segment[0] != p and line_segment[1] != p:
 						return False
 
@@ -82,7 +109,7 @@ class Vision(object):
 		visible_points = list(filter(check_visibility, set(self.obs_points + boundary.points )))
 
 		# find all obstructors intersecting the vision polygon
-		boundary_intersection_points = intersect_linesegs_linesegs(obs_segs, zip(boundary.points, boundary.points[1:]) + [(boundary.points[-1], boundary.points[0])])
+		boundary_intersection_points = Math.intersect_linesegs_linesegs(obs_segs, zip(boundary.points, boundary.points[1:]) + [(boundary.points[-1], boundary.points[0])])
 		
 		if self.debug: self.debug_points += [(p, 0xFF0000) for p in visible_points]
 		if self.debug: self.debug_points += [(p, 0x00FFFF) for p in boundary_intersection_points]
@@ -95,14 +122,14 @@ class Vision(object):
 				p = boundary_intersection_points[i]
 				vis = True
 				
-				if not point_on_lineseg(line_segment[0], line_segment[1], p) and check_intersect_lineseg_lineseg(eye, p, line_segment[0], line_segment[1]):
+				if not point_on_lineseg(line_segment[0], line_segment[1], p) and Math.check_intersect_lineseg_lineseg(eye, p, line_segment[0], line_segment[1]):
 					boundary_intersection_points.remove(p)
 				else:
 					i+=1
 
 		visible_points += boundary_intersection_points
 
-		poly = Polygon()
+		poly = Math.Polygon()
 		poly.add_points(visible_points)
 		poly.sort_around(eye)
 
@@ -113,7 +140,7 @@ class Vision(object):
 			n = poly.points[ (i+1) % len(poly.points) ]
 
 			# intersect visible point with obstructors and boundary polygon
-			intersections = intersect_linesegs_ray(obs_segs, eye, c) + intersect_poly_ray(boundary.points, eye, c)
+			intersections = Math.intersect_linesegs_ray(obs_segs, eye, c) + Math.intersect_poly_ray(boundary.points, eye, c)
 
 			if intersections:
 				# find closest intersection point and add it to point list
