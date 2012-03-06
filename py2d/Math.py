@@ -429,13 +429,105 @@ class Polygon(object):
 		# we are inside if we have an odd amount of polygon intersections
 		return 1 if len(intersections) % 2 == 1 else 0
 
+
+	def as_tuple_list(self):
+		return [(p.x, p.y) for p in self.points]
+
+	def get_width(self):
+		return self.right - self.left
+
+	def get_height(self):
+		return self.bottom - self.top
+
+	def get_left(self):
+		return min(self.points, key=lambda p: p.x).x
+
+	def get_right(self):
+		return max(self.points, key=lambda p: p.x).x
+
+	def get_top(self):
+		return min(self.points, key=lambda p: p.y).y
+
+	def get_bottom(self):
+		return max(self.points, key=lambda p: p.y).y
+
 	append = add_point
 	extend = add_points
 
 	center = property(get_centerpoint)
 
+	left = property(get_left)
+	right = property(get_right)
 
+	top = property(get_top)
+	bottom = property(get_bottom)
+
+	width = property(get_width)
+	height = property(get_height)
+
+class Transform(object):
+	"""Class for representing affine transformations"""
+
+	def __init__(self, data):
+		self.data = data
 		
+	@staticmethod
+	def unit():
+		"""Get a new unit tranformation"""
+		return Transform([[1, 0, 0],
+		                  [0, 1, 0],
+			          [0, 0, 1]])
+
+	@staticmethod
+	def move(dx, dy):
+		"""Get a transformation that moves by dx, dy"""
+		return Transform([[1, 0, dx],
+		                  [0, 1, dy],
+			          [0, 0, 1]])
+
+	@staticmethod
+	def rotate(phi):
+		"""Get a transformation that rotates by phi"""
+		return Transform([[math.cos(phi), -math.sin(phi), 0],
+		                  [math.sin(phi), math.cos(phi), 0],
+			          [0, 0, 1]])
+
+
+	@staticmethod
+	def scale(sx, sy):
+		"""Get a transformation that scales by sx, sy"""
+		return Transform([[sx, 0, 0],
+		                  [0, sy, 0],
+			          [0, 0, 1]])
+
+	def __add__(self, b):
+		t = Transform()
+		t.data = [[self.data[x][y] + b.data[x][y] for y in range(3)] for x in range(3)]
+		return t
+	
+	def __sub__(self, b):
+		t = Transform()
+		t.data = [[self.data[x][y] - b.data[x][y] for y in range(3)] for x in range(3)]
+		return t
+
+	def __mul__(self, val):
+
+		if isinstance(val, Vector):
+
+			x = val.x * self.data[0][0] + val.y * self.data[0][1] + self.data[0][2]
+			y = val.x * self.data[1][0] + val.y * self.data[1][1] + self.data[1][2]
+			
+			return Vector(x,y)
+
+		else:
+			data = [[0 for y in range(3)] for x in range(3)]
+			for i in range(3):
+				for j in range(3):
+					for k in range(3):
+						data[i][j] += self.data[i][k] * val.data[k][j]
+
+			return Transform(data)
+
 
 def __intersect_line_line_u(p1, p2, q1, q2):
 
