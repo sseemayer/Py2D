@@ -101,11 +101,18 @@ class TestVector(unittest.TestCase):
 	def test_hash(self):
 		self.assertEqual( hash(self.u), hash(Vector(3.0, 2.0) + self.y * 2) )
 
+	def test_slope(self):
+
+		self.assertEqual(float('inf'), self.y.slope)
+		self.assertEqual(1.5, self.v.slope)
+
 class TestPolygon(unittest.TestCase):
 
 	def setUp(self):
 		self.square = Polygon.regular( Vector( 10.0, 30.0 ), 3, 4 )
+		self.square2 = Polygon.regular( Vector( 5.0, 30.0), 4, 4 )
 		self.triangle = Polygon.regular( Vector( 12.0, 32.0 ), 5, 3 )
+		self.irregular = Polygon.from_pointlist( [ Vector(1, 1), Vector(0, 3), Vector(4, 5), Vector(3, 2) ] )
 
 	def test_pointlen(self):
 		self.assertEqual(3, len(self.triangle))
@@ -158,6 +165,44 @@ class TestPolygon(unittest.TestCase):
 		self.assertEqual(self.square.clone(), self.square)
 
 
+	def test_clockwise(self):
+		self.assertFalse(self.irregular.is_clockwise())
+
+	def test_flip(self):
+		self.irregular.flip()
+		self.assertTrue(self.irregular.is_clockwise())
+
+	def test_contains_point(self):
+
+		self.assertEqual(1, self.irregular.contains_point(Vector(2,2)))
+		self.assertEqual(1, self.irregular.contains_point(Vector(1,2)))
+		self.assertEqual(2, self.irregular.contains_point(Vector(2,4)))
+		self.assertEqual(2, self.irregular.contains_point(Vector(1,1)))
+		self.assertEqual(2, self.irregular.contains_point(Vector(2,1.5)))
+		self.assertEqual(0, self.irregular.contains_point(Vector(0,4)))
+		self.assertEqual(0, self.irregular.contains_point(Vector(0,1)))
+		self.assertEqual(0, self.irregular.contains_point(Vector(0,0)))
+
+
+
+	def test_union(self):
+		union = Polygon.union(self.square, self.square2)
+		expected = [ Polygon.from_pointlist([Vector(13, 30), Vector(10,33), Vector(8,31), Vector(5,34), Vector(1,30), Vector(5,26), Vector(8,29), Vector(10,27) ]) ]
+		for p in union:
+			p.sort_around(Vector(8,30))
+
+		self.assertEqual(expected, union)
+
+	def test_intersection(self):
+		intersection = Polygon.intersect(self.square, self.square2)
+		expected = [ Polygon.from_pointlist([Vector(8,29), Vector(9,30), Vector(8,31), Vector(7,30)]) ]
+		self.assertEqual(expected, intersection)
+
+	def test_subtract(self):
+		subtract = Polygon.subtract(self.square, self.square2)
+		expected = [Polygon.from_pointlist([Vector(8, 31), Vector(9, 30), Vector(8, 29), Vector(10, 27), Vector(13, 30), Vector(10, 33)])]
+		self.assertEqual(expected, subtract)
+
 class TestIntersection(unittest.TestCase):
 	def setUp(self):
 
@@ -171,6 +216,7 @@ class TestIntersection(unittest.TestCase):
 		self.c = Vector(4, 2)
 		self.d = Vector(1, 1)
 		self.e = Vector(2, 4)
+		self.f = Vector(-1, 0)
 
 		self.square = Polygon.from_pointlist([ Vector(3, 3), Vector(-3, 3), Vector(-3, -3), Vector(3, -3) ])
 		self.diamond = Polygon.regular(Vector(0,0), 5, 4)
@@ -182,10 +228,14 @@ class TestIntersection(unittest.TestCase):
 		
 		self.assertEqual( Vector(3.5,1.75), intersect_lineseg_lineseg( self.a, self.b, self.origin, self.c ) )
 
+	def test_intersect_lineseg_ray(self):
+		self.assertEqual( Vector(3, 2), intersect_lineseg_ray(self.a, self.b, self.f, self.d) )
+		self.assertEqual( None, intersect_lineseg_ray(self.a, self.b, self.d, self.f) )
+
+
 	def test_intersect_poly_lineseg(self):
 		self.assertEqual( [ Vector(-3, -1.5), Vector(3, 1.5) ], intersect_poly_lineseg( self.square.points, self.origin - self.c, self.c ) )
 		self.assertEqual( [], intersect_poly_lineseg( self.diamond.points, self.origin, self.d ) )
-
 
 	def test_intersect_poly_ray(self):
 		self.assertEqual( [ Vector(3, 1.5) ], intersect_poly_ray(self.square.points, self.origin, self.c) )
@@ -204,7 +254,9 @@ class TestIntersection(unittest.TestCase):
 
 
 	def test_distance_point_lineseg_squared(self):
-		self.assertEqual( 4, distance_point_lineseg_squared(self.d, self.a, self.b) )
+		self.assertEqual( 3.2, distance_point_lineseg_squared(self.d, self.a, self.b) )
+		self.assertEqual( 0, distance_point_lineseg_squared(Vector(2,4), Vector(0,3), Vector(4, 5)) )
+		self.assertNotEqual( 0, distance_point_lineseg_squared(Vector(2,2), Vector(3,2), Vector(1, 1)) )
 
 if __name__ == '__main__':
 	unittest.main()
