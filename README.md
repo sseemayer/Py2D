@@ -19,5 +19,8 @@ You can see some functionality of Py2D in the examples package. Just run the scr
 
 Example names are given as Packagename.Classname - Valid example names are:
 
-* Logo.Logo
-* Draw.Draw
+* Logo.Logo - A bouncing Py2D logo made of vectors. Neat!
+* Draw.Draw - Draw polygons using the mouse
+* Math.Boolean - Demonstrate boolean operations on polygons
+
+If you get lost, press F1 in the example runner to display a help text. And remember to use the source, Luke!
