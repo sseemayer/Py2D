@@ -20,6 +20,10 @@ class ExampleRunner(object):
 
 		self.keys = defaultdict(lambda: False)
 
+		self.font = pygame.font.Font(pygame.font.get_default_font(), 12)
+
+		self.show_help = False
+
 	def get_example(self):
 		return self._example
 
@@ -29,7 +33,7 @@ class ExampleRunner(object):
 		if example == None:
 			pygame.display.set_caption("Py2D Examples")
 		else:
-			pygame.display.set_caption("Py2D Examples - %s" % example.title)
+			pygame.display.set_caption("Py2D Examples - %s (Press F1 for help)" % example.title)
 
 	def del_example(self):
 		self.set_example(None)
@@ -58,18 +62,22 @@ class ExampleRunner(object):
 					self.running = False
 					return
 
-				self.keys[event.key] = (event.type == KEYDOWN)
+				if event.key == K_F1 and event.type == KEYDOWN:
+					self.show_help = not self.show_help
+
+				if not self.show_help:
+					self.keys[event.key] = (event.type == KEYDOWN)
 				
 			elif event.type == QUIT:
 				self.running = False
 
-			elif event.type == MOUSEBUTTONUP:
+			elif event.type == MOUSEBUTTONUP and not self.show_help:
 				if self._example: self._example.mouse_up(event.pos, event.button)
 			
-			elif event.type == MOUSEBUTTONDOWN:
+			elif event.type == MOUSEBUTTONDOWN and not self.show_help:
 				if self._example: self._example.mouse_down(event.pos, event.button)
 
-			elif event.type == MOUSEMOTION:
+			elif event.type == MOUSEMOTION and not self.show_help:
 				if self._example: self._example.mouse_move(event.pos, event.rel, event.buttons)
 
 
@@ -77,9 +85,20 @@ class ExampleRunner(object):
 			self._example.update(time_elapsed)
 
 	def render(self):
-		self.screen.fill(BACKGROUND_COLOR)
-		if self._example:
-			self._example.render()
+
+		if self.show_help:
+			self.screen.fill(TEXT_BACKGROUND)
+			if self._example:
+				for l, line in enumerate([s.replace("\t","") for s in self._example.help.split("\n")]):
+					surf = self.font.render(line, True, TEXT_COLOR, TEXT_BACKGROUND) 
+					self.screen.blit(surf, (10, 15 * l) )
+
+		else:
+
+			self.screen.fill(BACKGROUND_COLOR)
+
+			if self._example:
+				self._example.render()
 
 
 	def example_from_string(self, example_name):
@@ -111,3 +130,5 @@ SCREEN_HEIGHT = 480
 
 BACKGROUND_COLOR = 0x000033
 
+TEXT_BACKGROUND = (16, 16, 16)
+TEXT_COLOR = (255,255,255)

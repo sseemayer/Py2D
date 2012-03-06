@@ -7,6 +7,16 @@ class Logo(py2d.examples.Main.Example):
 	def __init__(self, runner):
 		self.runner = runner
 		self.title = "Welcome"
+		self.help = """
+		Logo Sample
+		-----------------------------------------
+	
+		You should see a bouncing Py2D logo that is made up of polygons. Spiffy!
+
+		This demo also shows you how to use Transform objects to modify your poly points.
+
+		"""
+
 
 		# get dimensions of multi-polygon list by strategically selected letters :)
 		p = PY2D_LOGO[1]
