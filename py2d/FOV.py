@@ -17,9 +17,9 @@ class Vision:
 		>>> v = Vision(obs)
 		>>> poly = v.get_vision(eye, radius, boundary)
 		>>> poly.points[0:6]
-		[Vector(4.000000, 1.000000), Vector(2.000000, 4.000000), Vector(2.000000, 4.000000), Vector(0.000000, 20.000000), Vector(0.000000, 20.000000), Vector(-20.000000, 0.000000)]
+		[Vector(4.000, 1.000), Vector(2.000, 4.000), Vector(2.000, 4.000), Vector(0.000, 20.000), Vector(0.000, 20.000), Vector(-20.000, 0.000)]
 		>>> poly.points[6:]
-		[Vector(-20.000000, 0.000000), Vector(-0.000000, -20.000000), Vector(-0.000000, -20.000000), Vector(1.000000, -2.000000), Vector(1.000000, -2.000000), Vector(6.000000, -3.000000), Vector(6.000000, -3.000000), Vector(7.000000, -2.000000), Vector(7.000000, -2.000000)]
+		[Vector(-20.000, 0.000), Vector(-0.000, -20.000), Vector(-0.000, -20.000), Vector(1.000, -2.000), Vector(1.000, -2.000), Vector(6.000, -3.000), Vector(6.000, -3.000), Vector(7.000, -2.000), Vector(7.000, -2.000)]
 	"""
 
 	def __init__(self, obstructors):

@@ -96,7 +96,7 @@ class TestVector(unittest.TestCase):
 		self.assertEqual( Vector(1,0), self.x.clamp() )
 
 	def test_repr(self):
-		self.assertEqual( "Vector(3.000000, 4.000000)", str(self.u) )
+		self.assertEqual( "Vector(3.000, 4.000)", str(self.u) )
 
 	def test_hash(self):
 		self.assertEqual( hash(self.u), hash(Vector(3.0, 2.0) + self.y * 2) )
@@ -195,12 +195,18 @@ class TestPolygon(unittest.TestCase):
 
 	def test_intersection(self):
 		intersection = Polygon.intersect(self.square, self.square2)
-		expected = [ Polygon.from_pointlist([Vector(8,29), Vector(9,30), Vector(8,31), Vector(7,30)]) ]
+		for p in intersection:
+			p.sort_around(Vector(8,30))
+
+		expected = [ Polygon.from_tuples([(9.00, 30.00), (8.00, 31.00), (7.00, 30.00), (8.00, 29.00)]) ]
 		self.assertEqual(expected, intersection)
 
 	def test_subtract(self):
 		subtract = Polygon.subtract(self.square, self.square2)
-		expected = [Polygon.from_pointlist([Vector(8, 31), Vector(9, 30), Vector(8, 29), Vector(10, 27), Vector(13, 30), Vector(10, 33)])]
+		for p in subtract:
+			p.sort_around(Vector(8,30))
+		
+		expected = [ Polygon.from_tuples( [(13.00, 30.00), (9.00, 30.00), (10.00, 33.00), (8.00, 31.00), (8.00, 29.00), (10.00, 27.00)] )]
 		self.assertEqual(expected, subtract)
 
 class TestIntersection(unittest.TestCase):

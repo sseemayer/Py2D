@@ -77,7 +77,7 @@ class Vector(object):
 		return Vector(self.x / val, self.y / val)
 
 	def __repr__(self):
-		return "Vector(%f, %f)" % (self.x, self.y)
+		return "Vector(%.3f, %.3f)" % (self.x, self.y)
 	
 	def __eq__(self, other):
 		if not isinstance(other, Vector): return False
@@ -147,6 +147,18 @@ class Polygon(object):
 
 		p = Polygon()
 		p.points = points
+		return p
+
+	@staticmethod
+	def from_tuples(tuples):
+		"""Create a polygon from 2-tuples
+
+		@type tuples: List
+		@param tuples: List of tuples of x,y coordinates
+		"""
+
+		p = Polygon()
+		p.points = [ Vector(t[0], t[1]) for t in tuples ]
 		return p
 
 	def add_point(self, point):
@@ -234,7 +246,10 @@ class Polygon(object):
 	
 		# for union and intersection, we want the same orientation on both polygons. for difference, we want different orientation.
 		matching_orientation = polygon_a.is_clockwise() == polygon_b.is_clockwise()
-		if matching_orientation != (operation != 'd'): polygon_b.flip()
+		if matching_orientation != (operation != 'd'): 
+			
+			polygon_b = polygon_b.clone()
+			polygon_b.flip()
 
 		# initialize vector rings
 		v_a = [(p, polygon_b.contains_point(p)) for p in polygon_a.points]
@@ -255,16 +270,16 @@ class Polygon(object):
 			k, r = None, False
 			if v1.x < v2.x:
 				k = lambda i: i.x
-				r = False
+				r = True
 			elif v1.x > v2.x:
 				k = lambda i: i.x
-				r = True
+				r = False
 			elif v1.y < v2.y:
 				k = lambda i: i.y
-				r = False
+				r = True
 			else:
 				k = lambda i: i.y
-				r = True
+				r = False
 
 			l = [ (p, 2) for p in sorted(ints, key=k, reverse=r) ]
 
@@ -304,9 +319,10 @@ class Polygon(object):
 		extend_fragments(v_a, polygon_b, fragment_type_a)
 		extend_fragments(v_b, polygon_a, fragment_type_b)
 
-		#for k in edge_fragments.keys():
-		#	for v in edge_fragments[k]:
-		#		print "%s -> %s" % (k, v)
+		def print_edge():
+			for k in edge_fragments.keys():
+				for v in edge_fragments[k]:
+					print "%s -> %s" % (k, v)
 
 
 		def simplify_sequence(seq):
@@ -323,16 +339,26 @@ class Polygon(object):
 
 		output = []
 		while edge_fragments:
-			start = edge_fragments.keys()[-1]
-			current = edge_fragments[start].pop()
+			start = edge_fragments.keys()[0]
+			current = edge_fragments[start][0]
 			sequence = [start]
-		
-			if not edge_fragments[start]: del edge_fragments[start]
-
-			while current != start:
+	
+			# follow along the edge fragments sequence
+			while not current in sequence:
 				sequence.append(current)
-				current = edge_fragments[current].pop()
-				if not edge_fragments[sequence[-1]]: del edge_fragments[sequence[-1]]
+				current = edge_fragments[current][0]
+
+
+			# get only the cyclic part of the sequence
+			sequence = sequence[sequence.index(current):]
+
+			for c,n in zip(sequence, sequence[1:]) + [(sequence[-1], sequence[0])]:
+				edge_fragments[c].remove(n)
+
+				if not edge_fragments[c]: 
+					del edge_fragments[c]
+
+
 
 			output.append(Polygon.from_pointlist(simplify_sequence(sequence)))
 

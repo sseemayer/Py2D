@@ -10,12 +10,19 @@ class Boolean(py2d.examples.Main.Example):
 		self.runner = runner
 		self.title = "Boolean Operations"
 
+		#self.poly_a = Polygon.from_tuples([(0,0), (4,0), (4,4), (0, 4)])
+		#self.poly_b = Polygon.from_tuples([(2,2), (3,6), (1,6)])
+
 		self.poly_a = Polygon()
 		self.poly_b = Polygon()
 
 		self.active_poly = True
 		self.bool = []
 		self.mode = 'i'
+
+		self.fill = True
+
+		self.update_bool()
 
 	def update(self, time_elapsed):
 		if self.runner.keys[K_BACKSPACE]:
@@ -27,6 +34,8 @@ class Boolean(py2d.examples.Main.Example):
 			else:
 				if self.poly_b.points: del(self.poly_b.points[-1])
 
+			self.update_bool()
+
 		if self.runner.keys[K_SPACE]:
 			self.runner.keys[K_SPACE] = False
 			self.active_poly = not self.active_poly
@@ -35,7 +44,6 @@ class Boolean(py2d.examples.Main.Example):
 			self.runner.keys[K_u] = False
 			self.mode = 'u'
 			self.update_bool()
-
 
 		if self.runner.keys[K_i]:
 			self.runner.keys[K_i] = False
@@ -46,6 +54,10 @@ class Boolean(py2d.examples.Main.Example):
 			self.runner.keys[K_d] = False
 			self.mode = 'd'
 			self.update_bool()
+
+		if self.runner.keys[K_f]:
+			self.runner.keys[K_f] = False
+			self.fill = not self.fill
 
 	def render(self):
 		
@@ -61,6 +73,10 @@ class Boolean(py2d.examples.Main.Example):
 
 	def draw_poly(self, poly, color):
 		if len(poly) > 1:
+			if self.fill and len(poly) > 2:
+				pygame.draw.polygon(self.runner.screen, color, poly.as_tuple_list())
+			
+			
 			pygame.draw.lines(self.runner.screen, color, True, poly.as_tuple_list())
 		elif poly.points:
 			pygame.draw.circle(self.runner.screen, color, poly.points[0].as_tuple(), 2)
@@ -78,7 +94,10 @@ class Boolean(py2d.examples.Main.Example):
 
 	def update_bool(self):
 		if len(self.poly_a) > 2 and len(self.poly_b) > 2:
-			self.bool = Polygon.boolean_operation(self.poly_a, self.poly_b, self.mode)
+			try:
+				self.bool = Polygon.boolean_operation(self.poly_a, self.poly_b, self.mode)
+			except IndexError:
+				self.bool = []
 		else:
 			self.bool = []
 

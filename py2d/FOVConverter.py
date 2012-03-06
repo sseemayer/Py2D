@@ -14,10 +14,9 @@ def convert_tilemap(width, height, blocking_function, tile_width, tile_height):
 	>>> blocking_func = lambda x,y: map_data[x][y]
 	>>> obstructors = convert_tilemap( len(map_data), len(map_data[0]), blocking_func, 1, 1)
 	>>> print "\\n".join(map(str, obstructors))
-	[Vector(0.000000, 0.000000), Vector(5.000000, 0.000000), Vector(5.000000, 2.000000), Vector(3.000000, 2.000000), Vector(3.000000, 4.000000), Vector(0.000000, 4.000000), Vector(0.000000, 0.000000)]
-	[Vector(1.000000, 5.000000), Vector(6.000000, 5.000000), Vector(6.000000, 8.000000), Vector(1.000000, 8.000000), Vector(1.000000, 5.000000)]
-	[Vector(0.000000, 4.000000), Vector(3.000000, 4.000000), Vector(3.000000, 2.000000), Vector(5.000000, 2.000000), Vector(5.000000, 0.000000), Vector(7.000000, 0.000000), Vector(7.000000, 8.000000), Vector(6.000000, 8.000000), Vector(6.000000, 5.000000), Vector(1.000000, 5.000000), Vector(1.000000, 8.000000), Vector(0.000000, 8.000000), Vector(0.000000, 4.000000)]
-
+	[Vector(0.000, 0.000), Vector(5.000, 0.000), Vector(5.000, 2.000), Vector(3.000, 2.000), Vector(3.000, 4.000), Vector(0.000, 4.000), Vector(0.000, 0.000)]
+    	[Vector(1.000, 5.000), Vector(6.000, 5.000), Vector(6.000, 8.000), Vector(1.000, 8.000), Vector(1.000, 5.000)]
+    	[Vector(0.000, 4.000), Vector(3.000, 4.000), Vector(3.000, 2.000), Vector(5.000, 2.000), Vector(5.000, 0.000), Vector(7.000, 0.000), Vector(7.000, 8.000), Vector(6.000, 8.000), Vector(6.000, 5.000), Vector(1.000, 5.000), Vector(1.000, 8.000), Vector(0.000, 8.000), Vector(0.000, 4.000)]
 
 	@type width: int
 	@param width: The width of the map in tiles
