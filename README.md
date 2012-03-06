@@ -1,7 +1,7 @@
 Py2D game utility library
 =========================
 
-![Py2D Logo Example][http://i.imgur.com/v2VPS.png]
+![Py2D Logo Example](http://i.imgur.com/v2VPS.png)
 
 Py2D attempts to help game developers with commonly found tasks, especially in vector-based games.
 
