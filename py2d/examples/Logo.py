@@ -11,7 +11,7 @@ class Logo(py2d.examples.Main.Example):
 		Logo Sample
 		-----------------------------------------
 	
-		You should see a bouncing Py2D logo that is made up of polygons. Spiffy!
+		You should see a bouncing, rotating Py2D logo that is made up of polygons. Spiffy!
 
 		This demo also shows you how to use Transform objects to modify your poly points.
 
@@ -33,9 +33,10 @@ class Logo(py2d.examples.Main.Example):
 		
 		self.time = (self.time + time_elapsed) 
 		scale = abs( math.sin(self.time * 0.001 ) * 8 ) + 1
+		rot = math.sin(self.time * 0.0003) * (math.pi / 6)
 
-		# first transform logo to be centered at 0,0. then scale, finally position at center of screen
-		self.transform = Transform.move(py2d.examples.Main.SCREEN_WIDTH / 2, py2d.examples.Main.SCREEN_HEIGHT / 2) * Transform.scale(scale,scale) * Transform.move(-self.w/2, -self.h/2)
+		# first transform logo to be centered at 0,0. then rotate, scale, finally position at center of screen
+		self.transform = Transform.move(py2d.examples.Main.SCREEN_WIDTH / 2, py2d.examples.Main.SCREEN_HEIGHT / 2) * Transform.scale(scale,scale) * Transform.rotate(rot) * Transform.move(-self.w/2, -self.h/2)
 
 	def render(self):
 		for poly, color in zip(PY2D_LOGO, self.colors):
