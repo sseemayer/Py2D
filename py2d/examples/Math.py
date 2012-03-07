@@ -4,6 +4,96 @@ from pygame.locals import *
 from py2d.Math import *
 import py2d.examples.Main
 
+
+
+class Offset(py2d.examples.Main.Example):
+
+	def __init__(self, runner):
+		self.runner = runner
+		self.title = "Polygon Offset"
+		self.help = """
+		Polygon Offset Sample
+		-----------------------------------------
+		
+		Draw a polygon outline with the mouse. Py2D will calculate offset polygons.
+
+		Key mappings:
+
+		  MOUSE1: Add new point to the end of the active polygon
+		  BACKSPACE: Delete the last point of the active polygon
+
+		  c: Increase offset amount
+		  x: Decrease offset amount
+
+		  F: Toggle polygon fill
+
+		Have fun!
+		"""
+
+		self.poly = Polygon()
+		
+		self.update_offset()
+
+		self.amount = 10
+
+		self.fill = False
+
+	def update(self, time_elapsed):
+		if self.runner.keys[K_BACKSPACE] and self.poly.points:
+			del(self.poly.points[len(self.poly.points)-1])
+			self.runner.keys[K_BACKSPACE] = False
+			self.update_offset()
+
+		if self.runner.keys[K_c]:
+			self.amount += time_elapsed * 0.01
+			self.update_offset()
+
+		if self.runner.keys[K_x]:
+			self.amount -= time_elapsed * 0.01
+			if self.amount < 1: self.amount = 1
+			self.update_offset()
+
+		if self.runner.keys[K_f]:
+			self.runner.keys[K_f] = False
+			self.fill = not self.fill
+
+
+	def render(self):
+		
+		for p in self.grow:
+			self.draw_poly(p, 0x00ff00)
+
+		self.draw_poly(self.poly, 0xffffff)
+
+		for p in self.shrink:
+			self.draw_poly(p, 0xff0000)
+
+
+	def draw_poly(self, poly, color):
+		if len(poly) > 1:
+			if self.fill and len(poly) > 2:
+				pygame.draw.polygon(self.runner.screen, color, poly.as_tuple_list())
+				pygame.draw.lines(self.runner.screen, 0x000000, True, poly.as_tuple_list())
+			elif len(poly) > 1:
+				pygame.draw.lines(self.runner.screen, color, True, poly.as_tuple_list())
+		elif poly.points:
+			pygame.draw.circle(self.runner.screen, color, poly.points[0].as_tuple(), 2)
+
+
+	def mouse_down(self, pos, button):
+		if button == 1:
+			self.poly.add_point(Vector(pos[0], pos[1]))
+			self.update_offset()
+
+	def update_offset(self):
+		if len(self.poly) > 2:
+			self.shrink = Polygon.offset([self.poly.clone_ccw()], -self.amount)
+			self.grow = Polygon.offset([self.poly.clone_ccw()], self.amount)
+		else:
+			self.shrink = []
+			self.grow = []
+
+
 class Boolean(py2d.examples.Main.Example):
 
 	def __init__(self, runner):

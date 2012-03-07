@@ -3,6 +3,13 @@ import math
 
 from collections import defaultdict
 
+def tip_decorator_pointy(a,b,c,d,is_cw):
+	intersection = intersect_line_line(a,b,c,d) 
+	return [intersection] 
+
+def tip_decorator_flat(a,b,c,d,is_cw):
+	return []
+
 class Vector(object):
 	"""Class for 2D Vectors.
 	
@@ -55,6 +62,10 @@ class Vector(object):
 	def clone(self):
 		"""Return a copy of this vector"""
 		return Vector(self.x, self.y)
+
+	def normal(self):
+		"""Return a normal vector of this vector"""
+		return Vector(-self.y, self.x)
 
 	def as_tuple(self):
 		"""Convert the vector to a non-object tuple"""
@@ -222,6 +233,11 @@ class Polygon(object):
 		poly.points = [ p for p in self.points ]
 		return poly
 
+	def clone_ccw(self):
+		p = self.clone()
+		if p.is_clockwise(): p.flip()
+		return p
+
 	@staticmethod
 	def boolean_operation(polygon_a, polygon_b, operation):
 		"""Perform a boolean operation on two polygons.
@@ -325,16 +341,6 @@ class Polygon(object):
 					print "%s -> %s" % (k, v)
 
 
-		def simplify_sequence(seq):
-
-			i = 0
-			while i < len(seq):
-				p, c, n = seq[i-1], seq[i], seq[(i + 1) % len(seq)]
-				if distance_point_lineseg_squared(c, p, n) < EPSILON:
-					del seq[i]
-				else:
-					i+=1
-			return seq
 
 
 		output = []
@@ -360,10 +366,22 @@ class Polygon(object):
 
 
 
-			output.append(Polygon.from_pointlist(simplify_sequence(sequence)))
+			output.append(Polygon.from_pointlist(Polygon.simplify_sequence(sequence)))
 
 		return output
 
+	@staticmethod
+	def simplify_sequence(seq):
+		"""Simplify a point sequence so that no subsequent points are on the same line"""
+
+		i = 0
+		while i < len(seq):
+			p, c, n = seq[i-1], seq[i], seq[(i + 1) % len(seq)]
+			if distance_point_lineseg_squared(c, p, n) < EPSILON:
+				del seq[i]
+			else:
+				i+=1
+		return seq
 	@staticmethod
 	def union(polygon_a, polygon_b):
 		"""Get the union of polygon_a and polygon_b
@@ -406,6 +424,57 @@ class Polygon(object):
 		"""
 		return Polygon.boolean_operation(polygon_a, polygon_b, 'd')
 	
+	
+	@staticmethod
+	def offset(polys, amount, tip_decorator=tip_decorator_pointy):
+		"""Shrink or grow a polygon by a given amount.
+
+		@type polys: List
+		@param polys: The list of polygons to offset. Counter-clockwise polygons will be treated as islands, clockwise polygons as holes.
+
+		@type amount: float
+		@param amount: The amount to offset. Positive values will grow the polygon, negative values will shrink.
+
+		@type tip_decorator: function
+		@param tip_decorator: A function used for decorating tips generated in the offset polygon
+		"""
+
+		if amount == 0: return polys
+
+		def offset_poly(poly):
+			r = []
+			for i in range(len(poly.points)): 
+				c, n, n2 = poly.points[i], poly.points[ (i+1) % len(poly) ], poly.points[ (i+2) % len(poly) ]
+				is_convex = point_orientation(c,n,n2) 
+
+				unit_normal = (n - c).normal().normalize()
+				unit_normal2 = (n2 - n).normal().normalize()
+				
+				c_prime = c + unit_normal * amount
+				n_prime = n + unit_normal * amount
+				n2_prime = n2 + unit_normal2 * amount
+				n_prime2 = n + unit_normal2 * amount
+
+				r.append(c_prime)
+				r.append(n_prime)
+
+				if is_convex == (amount > 0): 
+					r.append(n)
+				else: 
+					r.extend(tip_decorator(c_prime, n_prime, n_prime2, n2_prime, True))
+
+			return r
+
+		raw = []
+		for poly in polys:
+			raw.append(offset_poly(poly))
+
+		# TODO remove loops by winding rule criterion!
+
+		return [Polygon.from_pointlist(Polygon.simplify_sequence(r)) for r in raw]
+
+
+		
 
 	def is_clockwise(self):
 		"""Determines whether the polygon has a clock-wise orientation."""

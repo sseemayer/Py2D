@@ -95,6 +95,9 @@ class TestVector(unittest.TestCase):
 		self.assertEqual( Vector(0,0), self.z.clamp() )
 		self.assertEqual( Vector(1,0), self.x.clamp() )
 
+	def test_normal(self):
+		self.assertEqual( Vector(-4, 3), self.u.normal())
+	
 	def test_repr(self):
 		self.assertEqual( "Vector(3.000, 4.000)", str(self.u) )
 
@@ -208,6 +211,14 @@ class TestPolygon(unittest.TestCase):
 		
 		expected = [ Polygon.from_tuples( [(13.00, 30.00), (9.00, 30.00), (10.00, 33.00), (8.00, 31.00), (8.00, 29.00), (10.00, 27.00)] )]
 		self.assertEqual(expected, subtract)
+
+
+	def test_offset(self):
+		#self.square = Polygon.regular( Vector( 10.0, 30.0 ), 3, 4 )
+		#self.square2 = Polygon.regular( Vector( 5.0, 30.0), 4, 4 )
+		#self.triangle = Polygon.regular( Vector( 12.0, 32.0 ), 5, 3 )
+		
+		self.assertEqual( [Polygon.regular( Vector(10, 30), 5, 4) ], Polygon.offset([self.square], 2.0) )
 
 class TestIntersection(unittest.TestCase):
 	def setUp(self):
