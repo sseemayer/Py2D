@@ -5,6 +5,17 @@ title: Welcome
 
 <div id="gallery">Please enable JavaScript to show this gallery.</div>
 
+<div id="buttons">
+	<a class="big downarrow button" href="https://github.com/sseemayer/Py2D/zipball/master">Download .zip</a>
+	<a class="downarrow button" href="https://github.com/sseemayer/Py2D/tarball/master">Download .tar.gz</a>
+	<a class="fork button" href="https://github.com/sseemayer/Py2D">Py2D on GitHub</a>
+</div>
+
+<p>
+	Py2D is an utility library for creating vector-based games with Python. It is designed to be API-agnostic so you should be able to use it with pygame, pyglet or something completely else (however, the demos are programmed in pygame).
+</p>
+
+
 <script>
 	var images = [
 		{
@@ -34,7 +45,7 @@ title: Welcome
 	for (var i=0; i< images.length; i++) {
 		images[i].layer = '<div class="image-description"><div class="title">' + images[i].title + '</div>' + images[i].description + '<p><a class="button" href="' + images[i].blink + '">Learn more</a></p></div>';
 	}
-		
+
 
 	Galleria.loadTheme('js/galleria/themes/classic/galleria.classic.min.js');
 	$("#gallery").galleria({
