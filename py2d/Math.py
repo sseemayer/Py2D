@@ -258,6 +258,31 @@ class Polygon(object):
 		@param operation: The operation to perform. Either 'u' for union, 'i' for intersection, or 'd' for difference.
 		"""
 
+		def inorder_extend(v, v1, v2, ints):
+			"""Extend a sequence v by points ints that are on the segment v1, v2"""
+
+			k, r = None, False
+			if v1.x < v2.x:
+				k = lambda i: i.x
+				r = True
+			elif v1.x > v2.x:
+				k = lambda i: i.x
+				r = False
+			elif v1.y < v2.y:
+				k = lambda i: i.y
+				r = True
+			else:
+				k = lambda i: i.y
+				r = False
+
+			l = [ (p, 2) for p in sorted(ints, key=k, reverse=r) ]
+
+			i = next((i for i, p in enumerate(v) if p[0] == v2), -1)
+			assert(i>=0)
+
+			for e in l:
+				v.insert(i, e)
+
 		if operation not in 'uid' or len(operation) > 1: raise ValueError("Operation must be 'u', 'i' or 'd'!")
 	
 		# for union and intersection, we want the same orientation on both polygons. for difference, we want different orientation.
@@ -281,29 +306,6 @@ class Polygon(object):
 				if i:
 					intersections_a[(a1[0],a2[0])].append(i)
 					intersections_b[(b1[0],b2[0])].append(i)
-
-		def inorder_extend(v, v1, v2, ints):
-			k, r = None, False
-			if v1.x < v2.x:
-				k = lambda i: i.x
-				r = True
-			elif v1.x > v2.x:
-				k = lambda i: i.x
-				r = False
-			elif v1.y < v2.y:
-				k = lambda i: i.y
-				r = True
-			else:
-				k = lambda i: i.y
-				r = False
-
-			l = [ (p, 2) for p in sorted(ints, key=k, reverse=r) ]
-
-			i = next((i for i, p in enumerate(v) if p[0] == v2), -1)
-			assert(i>=0)
-
-			for e in l:
-				v.insert(i, e)
 
 			
 		# extend vector rings by intersections 
@@ -377,11 +379,14 @@ class Polygon(object):
 		i = 0
 		while i < len(seq):
 			p, c, n = seq[i-1], seq[i], seq[(i + 1) % len(seq)]
-			if distance_point_lineseg_squared(c, p, n) < EPSILON:
+
+			if p == c or c == n or distance_point_lineseg_squared(c, p, n) < EPSILON:
 				del seq[i]
 			else:
 				i+=1
 		return seq
+
+
 	@staticmethod
 	def union(polygon_a, polygon_b):
 		"""Get the union of polygon_a and polygon_b
@@ -426,7 +431,7 @@ class Polygon(object):
 	
 	
 	@staticmethod
-	def offset(polys, amount, tip_decorator=tip_decorator_pointy):
+	def offset(polys, amount, tip_decorator=tip_decorator_pointy, debug_callback=None):
 		"""Shrink or grow a polygon by a given amount.
 
 		@type polys: List
@@ -438,6 +443,9 @@ class Polygon(object):
 		@type tip_decorator: function
 		@param tip_decorator: A function used for decorating tips generated in the offset polygon
 		"""
+
+		# fix passing a single polygon instead of a poly list
+		if isinstance(polys, Polygon): polys = [polys]
 
 		if amount == 0: return polys
 
@@ -463,18 +471,159 @@ class Polygon(object):
 				else: 
 					r.extend(tip_decorator(c_prime, n_prime, n_prime2, n2_prime, True))
 
+	
 			return r
+
+
+		def decompose(poly_points):
+			"""Decompose a possibly self-intersecting polygon into multiple simple polygons."""
+
+			def inorder_extend(v, v1, v2, ints):
+				"""Extend a sequence v by points ints that are on the segment v1, v2"""
+
+				k, r = None, False
+				if v1.x < v2.x:
+					k = lambda i: i.x
+					r = True
+				elif v1.x > v2.x:
+					k = lambda i: i.x
+					r = False
+				elif v1.y < v2.y:
+					k = lambda i: i.y
+					r = True
+				else:
+					k = lambda i: i.y
+					r = False
+
+				l = sorted(ints, key=k, reverse=r)
+				i = next((i for i, p in enumerate(v) if p == v2), -1)
+				assert(i>=0)
+
+				for e in l:
+					v.insert(i, e)
+
+			pts = [p for p in poly_points]
+
+			# find self-intersections
+			ints = defaultdict(list)
+			for i in range(len(pts)):
+				for j in range(i+1, len(pts)):
+					a = pts[i]
+					b = pts[(i+1)%len(pts)]
+					c = pts[j]
+					d = pts[(j+1)%len(pts)]
+
+					x = intersect_lineseg_lineseg(a, b, c, d)
+					if x and x not in (a,b,c,d):
+						ints[(a,b)].append( x )
+						ints[(c,d)].append( x )
+
+
+			# add self-intersection points to poly
+			for k, v in ints.iteritems():
+				inorder_extend(pts, k[0], k[1], v)
+
+			# build a list of loops
+			out = []
+			while pts:
+				
+				# build up a list of seen points until we re-visit one - a loop!
+				seen = []
+				for p in pts + [pts[0]]:
+					if p not in seen:
+						seen.append(p)
+					else:
+						break
+
+				loop = seen[seen.index(p):]
+
+				# remove the loop from pts
+				for p in loop:
+					pts.remove(p)
+
+				out.append(loop)
+
+			return out
+
+
+		def winding_number(p, raw):
+
+			# compute winding number of point
+			#http://softsurfer.com/Archive/algorithm_0103/algorithm_0103.htm
+
+			wn = 0
+			for pp in raw:
+				for a,b in zip(pp, pp[1:]) + [(pp[-1], pp[0])]:
+					if a.y < p.y and b.y > p.y:
+						i = intersect_lineseg_ray(a,b,p,p+VECTOR_X)
+						if i and i.x > p.x:
+							wn -= 1
+
+					if a.y > p.y and b.y < p.y:
+						i = intersect_lineseg_ray(a,b,p,p+VECTOR_X)
+						if i and i.x > p.x:
+							wn += 1
+			return wn	
+
+
+		def find_point_in_poly(pts):
+			# find point inside of pts according to http://www.exaflop.org/docs/cgafaq/cga2.html#Subject%202.06:%20How%20do%20I%20find%20a%20single%20point%20inside%20a%20simple%20polygonu
+
+			if len(pts) == 3: return (pts[0] + pts[1] + pts[2]) / 3
+
+			
+			# find convex point v
+			v = None
+			for i in range(len(pts)):
+				a, v, b = pts[i-1], pts[i], pts[(i+1) % len(pts)]
+				if not point_orientation(a,v,b): break
+
+
+			q_s = [ q for q in pts if q not in [a,v,b] and point_in_triangle(q, a,v,b) ]
+			if q_s:
+				# return the midpoint of the shortest diagonal qv
+				q = min(q_s, key=lambda q: (q-v).length_squared ) 
+				return (q - v) / 2.0 + v
+			else:
+				# no diagonal from v, return midpoint of ab instead
+				return (b - a) / 2.0 + a
+		
+		def dbg(p, color, text):
+			if debug_callback:
+				debug_callback(p,color,text)
+
 
 		raw = []
 		for poly in polys:
-			raw.append(offset_poly(poly))
 
-		# TODO remove loops by winding rule criterion!
+			offset = offset_poly(poly)
+			decomp = decompose( offset )
+			
+			raw.extend( decomp )
 
-		return [Polygon.from_pointlist(Polygon.simplify_sequence(r)) for r in raw]
 
-
+		#print "\n-----------------\n"
+		output = []
+		for poly in raw:
 		
+			poly = Polygon.simplify_sequence(poly)
+			p = find_point_in_poly( poly )
+			wn = winding_number(p, raw) 
+
+			
+			dbg(p, 0xffff00, "%d %d" % (wn, len(poly)))
+			#print "%d %d" % (wn, len(poly))
+
+			# shrink: include poly in solution only if winding number of that region is greater than 1			
+			# grow: include only if winding number is 1
+			if (amount < 0 and wn > 0) or (amount > 0 and wn == 1):
+				output.append(Polygon.from_pointlist(poly))
+
+
+
+		return output
+
+	
 
 	def is_clockwise(self):
 		"""Determines whether the polygon has a clock-wise orientation."""
@@ -918,11 +1067,20 @@ def distance_point_lineseg_squared(p, a, b):
 	# perpendicular_squared = abs( ap_squared - ap_prime * ap_prime )
 
 	# return min(ap_squared, bp_squared, perpendicular_squared)
-	
+
+
+def point_in_triangle(p, a,b,c):
+	to = point_orientation(a,b,c)
+	return point_orientation(a,b,p) == to and point_orientation(b,c,p) == to and point_orientation(b,p,c) == to
 
 def point_orientation(a,b,c):
-	"""Returns the orientation of the triangle a, b, c"""
+	"""Returns the orientation of the triangle a, b, c.
+	
+	Return True if a,b,c are oriented clock-wise.
+	"""
 	return (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y) > 0
 
 VECTOR_NULL = Vector(0,0)
+VECTOR_X = Vector(1,0)
+VECTOR_Y = Vector(0,1)
 EPSILON = 0.0001

@@ -38,6 +38,7 @@ class Offset(py2d.examples.Main.Example):
 
 		self.fill = False
 
+
 	def update(self, time_elapsed):
 		if self.runner.keys[K_BACKSPACE] and self.poly.points:
 			del(self.poly.points[len(self.poly.points)-1])
@@ -79,6 +80,10 @@ class Offset(py2d.examples.Main.Example):
 		elif poly.points:
 			pygame.draw.circle(self.runner.screen, color, poly.points[0].as_tuple(), 2)
 
+		for p, c, t in self.debug_points:
+			#pygame.draw.circle(self.runner.screen, c, p.as_tuple(), 2.0)
+			self.runner.screen.blit(self.runner.font.render(t, False, c), p.as_tuple())
+
 
 	def mouse_down(self, pos, button):
 		if button == 1:
@@ -86,9 +91,15 @@ class Offset(py2d.examples.Main.Example):
 			self.update_offset()
 
 	def update_offset(self):
+		self.debug_points = []
+
+		
+		def debug_point(color):
+			return lambda p, c, t: self.debug_points.append((p,color,t))
+
 		if len(self.poly) > 2:
-			self.shrink = Polygon.offset([self.poly.clone_ccw()], -self.amount)
-			self.grow = Polygon.offset([self.poly.clone_ccw()], self.amount)
+			self.shrink = Polygon.offset([self.poly.clone_ccw()], -self.amount, debug_callback=debug_point((255,0,0)))
+			self.grow = Polygon.offset([self.poly.clone_ccw()], self.amount, debug_callback=debug_point((0,255,0)))
 		else:
 			self.shrink = []
 			self.grow = []
