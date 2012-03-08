@@ -169,3 +169,16 @@ body {
 a {
 	color: #00f;
 }
+
+footer {
+	background: #0a0a11;
+	color: #fff;
+	padding: 10pt;
+
+	font-size: 9pt;
+
+}
+
+footer .buttons {
+	float:right;
+}
