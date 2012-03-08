@@ -136,3 +136,15 @@ body {
 	clear: both;
 }
 
+.buttons { 
+
+	float: right;
+	margin: 5pt;
+	padding: 5pt;
+	width: 100px;
+
+}
+
+.buttons .button {
+	width: 100px;
+}
