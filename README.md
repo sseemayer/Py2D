@@ -9,6 +9,7 @@ The library is still in very early development, supported features so far are:
 * Polygonal Field-of-Vision Calculation
 * Generate polygon obstructors from tile map data
 * Perform boolean operations (union, intersection, difference) on polygons
+* Grow and shrink polygons (polygon buffering, polygon offsetting)
 
 Getting Started
 ---------------
@@ -22,5 +23,6 @@ Example names are given as Packagename.Classname - Valid example names are:
 * Logo.Logo - A bouncing Py2D logo made of vectors. Neat!
 * Draw.Draw - Draw polygons using the mouse
 * Math.Boolean - Demonstrate boolean operations on polygons
+* Math.Offset - Demonstrate polygon offsetting (also known as polygon buffering)
 
 If you get lost, press F1 in the example runner to display a help text. And remember to use the source, Luke!
