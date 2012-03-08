@@ -380,7 +380,7 @@ class Polygon(object):
 		while i < len(seq):
 			p, c, n = seq[i-1], seq[i], seq[(i + 1) % len(seq)]
 
-			if p == c or c == n or distance_point_lineseg_squared(c, p, n) < EPSILON:
+			if p == c or c == n or p == n or distance_point_lineseg_squared(c, p, n) < EPSILON:
 				del seq[i]
 			else:
 				i+=1
@@ -580,14 +580,27 @@ class Polygon(object):
 
 
 			q_s = [ q for q in pts if q not in [a,v,b] and point_in_triangle(q, a,v,b) ]
+
+			if len(pts) >= 5:
+				dbg(v, 0x000000, "V")
+				dbg(a, 0x000000, "A")
+				dbg(b, 0x000000, "B")
+					
+				for q in q_s:
+					dbg(q, 0x000000, "Q")
+
 			if q_s:
 				# return the midpoint of the shortest diagonal qv
 				q = min(q_s, key=lambda q: (q-v).length_squared ) 
+
+
 				return (q - v) / 2.0 + v
 			else:
 				# no diagonal from v, return midpoint of ab instead
 				return (b - a) / 2.0 + a
-		
+	
+
+
 		def dbg(p, color, text):
 			if debug_callback:
 				debug_callback(p,color,text)
@@ -616,7 +629,7 @@ class Polygon(object):
 
 			# shrink: include poly in solution only if winding number of that region is greater than 1			
 			# grow: include only if winding number is 1
-			if (amount < 0 and wn > 0) or (amount > 0 and wn == 1):
+			if False or (amount < 0 and wn > 0) or (amount > 0 and wn == 1):
 				output.append(Polygon.from_pointlist(poly))
 
 
@@ -1071,7 +1084,7 @@ def distance_point_lineseg_squared(p, a, b):
 
 def point_in_triangle(p, a,b,c):
 	to = point_orientation(a,b,c)
-	return point_orientation(a,b,p) == to and point_orientation(b,c,p) == to and point_orientation(b,p,c) == to
+	return point_orientation(a,b,p) == to and point_orientation(b,c,p) == to and point_orientation(a,p,c) == to
 
 def point_orientation(a,b,c):
 	"""Returns the orientation of the triangle a, b, c.
