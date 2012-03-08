@@ -24,5 +24,6 @@ Example names are given as Packagename.Classname - Valid example names are:
 * Draw.Draw - Draw polygons using the mouse
 * Math.Boolean - Demonstrate boolean operations on polygons
 * Math.Offset - Demonstrate polygon offsetting (also known as polygon buffering)
+* FOV.FOV - Field of View calculation
 
 If you get lost, press F1 in the example runner to display a help text. And remember to use the source, Luke!
