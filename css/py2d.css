@@ -134,17 +134,38 @@ body {
 
 #content {
 	clear: both;
+
+	line-height: 18pt;
 }
 
-.buttons { 
+#content p {
+	margin: 10pt;
+}
 
+#content strong, #content b {
+	font-weight: bold;
+}
+
+#side_bar { 
 	float: right;
-	margin: 5pt;
 	padding: 5pt;
-	width: 100px;
+	width: 150px;
+
+	margin: 0 0 0 10pt;
+
+	background: #ddd;
 
 }
 
-.buttons .button {
-	width: 100px;
+#side_bar .button {
+	width: 140px;
+	margin-bottom: 5pt;
+}
+
+#side_bar .big.button {
+	width: 120px;
+}
+
+a {
+	color: #00f;
 }
