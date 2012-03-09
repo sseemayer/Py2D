@@ -2,15 +2,15 @@
 <html>
 	<head>
 		<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
-		<script src="js/galleria/galleria-1.2.6.min.js"></script>
+		<script src="{{ page.root }}js/galleria/galleria-1.2.6.min.js"></script>
 		
-		<link rel="stylesheet" type="text/css" href="css/py2d.css" />
-		<link rel="stylesheet" type="text/css" href="css/css3buttons.css" />
+		<link rel="stylesheet" type="text/css" href="{{ page.root }}css/py2d.css" />
+		<link rel="stylesheet" type="text/css" href="{{ page.root }}css/css3buttons.css" />
 	</head>
 	<title>{{page.title}} - Py2D</title>
 	<body>
 
-		<a href="http://github.com/sseemayer/Py2D"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/abad93f42020b733148435e2cd92ce15c542d320/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub"></a>
+		<a href="http://github.com/sseemayer/Py2D"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 9999" src="https://a248.e.akamai.net/assets.github.com/img/abad93f42020b733148435e2cd92ce15c542d320/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub"></a>
 		<div id="main">
 
 			<header id="title">
@@ -19,9 +19,10 @@
 
 				<nav>
 					<ul>
-						<li><a href="index.htm">Home</a></li>
-						<li><a href="features.htm">Features</a></li>
-						<li><a href="documentation.htm">Documentation</a></li>
+						<li><a href="{{ page.root }}index.html">Home</a></li>
+						<li><a href="{{ page.root }}download.html">Download</a></li>
+						<li><a href="{{ page.root }}features.html">Features</a></li>
+						<li><a href="{{ page.root }}documentation.html">Documentation</a></li>
 					</ul>
 				</nav>
 
@@ -35,7 +36,9 @@
 
 			<footer>
 				<div class="buttons">
-					<a rel="license" href="http://creativecommons.org/licenses/by/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/80x15.png" /></a>
+					<a href="http://www.python.org"><img alt="Python" src="{{ page.root }}images/python.png"></a>
+					<a rel="license" href="http://creativecommons.org/licenses/by/3.0/"><img alt="Creative Commons License" src="http://i.creativecommons.org/l/by/3.0/80x15.png" /></a>
+
 				</div>
 				&copy; 2012 Stefan Seemayer.
 			</footer>

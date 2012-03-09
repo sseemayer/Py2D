@@ -138,6 +138,22 @@ body {
 	line-height: 18pt;
 }
 
+#content h1 {
+	font-size: 20pt;
+	background: #000;
+	color: #fff;
+
+
+	padding: 20pt 5pt 5pt 5pt;
+	border-bottom: 1px solid #003;
+}
+
+#content h2 {
+	font-size: 18pt;
+	color: #003;
+	margin: 20pt 0 0 10pt;
+}
+
 #content p {
 	margin: 10pt;
 }
@@ -146,28 +162,62 @@ body {
 	font-weight: bold;
 }
 
+#content ul {
+	list-style: disc;
+	margin: 10px 0px 10px 40px;
+}
+
+#content pre {
+	margin: 10px 0px 10px 40px;
+}
+
+#content code {
+	font-family: monospace;
+}
+
+#content .button_row {
+	text-align: center;
+}
+
 #side_bar { 
 	float: right;
 	padding: 5pt;
-	width: 150px;
-
+	width: 170px;
 	margin: 0 0 0 10pt;
 
 	background: #ddd;
 
+	font-size: 10pt;
+
 }
 
 #side_bar .button {
-	width: 140px;
+	width: 160px;
 	margin-bottom: 5pt;
 }
 
 #side_bar .big.button {
-	width: 120px;
+	width: 140px;
+}
+
+#side_bar h2 {
+	font-size: 14pt;
+	font-weight: bold;
+	padding: 1pt 0;
+	margin: 10pt 0 5pt 0;
+	
+	color: #003;
+
+	text-align:center;
+}
+
+#side_bar ul.actions {
+	list-style: none;
+	margin: 0;
 }
 
 a {
-	color: #00f;
+	color: #006;
 }
 
 footer {
