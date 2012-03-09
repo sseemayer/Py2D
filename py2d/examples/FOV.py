@@ -18,16 +18,21 @@ class FOV(py2d.examples.Main.Example):
 
 		Have fun!
 		"""
-
-		box = [Vector(-15, -2), Vector(15,-2), Vector(15,2), Vector(-15,2), Vector(-15,-2)]
-
+		
 		center = Vector( py2d.examples.Main.SCREEN_WIDTH / 2, py2d.examples.Main.SCREEN_HEIGHT / 2)
 
-		# create circle of boxes around center
+		## create circle of boxes around center
+		box = [Vector(-15, -2), Vector(15,-2), Vector(15,2), Vector(-15,2), Vector(-15,-2)]
 		self.obstructors = [ [ Transform.move( center.x, center.y ) * Transform.rotate(phi) * Transform.move(100,0) * p for p in box ] for phi in [i * 2.0 * math.pi / 16 for i in range(16)]]
-		
+	
+		#self.obstructors = [ [ Vector(100,100), Vector(220, 100), Vector(220,120), Vector(100,120), Vector(100,100) ] ]
+
 		self.eye = center
-		self.vision = Vision(self.obstructors)
+		self.debug = False
+
+
+		self.vision = Vision(self.obstructors, self.debug)
+
 
 	def update(self, time_elapsed):
 		self.fov = self.vision.get_vision(self.eye, VISION_RADIUS, Polygon.regular(self.eye, VISION_RADIUS, VISION_POINTS))
@@ -39,6 +44,13 @@ class FOV(py2d.examples.Main.Example):
 
 		for obs in self.obstructors:
 			pygame.draw.lines(self.runner.screen, 0xFF0000, True, [ p.as_tuple() for p in obs ])
+
+		if self.debug:
+			for p, c in self.vision.debug_points:
+				pygame.draw.ellipse(self.runner.screen, c, pygame.Rect(p.x - 2, p.y - 2, 4, 4))
+
+			for c, ls in self.vision.debug_linesegs:
+				pygame.draw.lines(self.runner.screen, c, False, [ p.as_tuple() for p in ls])
 
 
 	def mouse_move(self, pos, rel, buttons): 

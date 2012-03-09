@@ -22,7 +22,7 @@ class Vision:
 		[Vector(-20.000, 0.000), Vector(-0.000, -20.000), Vector(-0.000, -20.000), Vector(1.000, -2.000), Vector(1.000, -2.000), Vector(6.000, -3.000), Vector(6.000, -3.000), Vector(7.000, -2.000), Vector(7.000, -2.000)]
 	"""
 
-	def __init__(self, obstructors):
+	def __init__(self, obstructors, debug=False):
 		"""Create a new vision object.
 
 		@type obstructors: list
@@ -30,10 +30,9 @@ class Vision:
 		"""
 
 		self.set_obstructors(obstructors)
-		#self.debug = False
-
-
-		#self.debug_points = []
+		self.debug = debug
+		self.debug_points = []
+		self.debug_linesegs = []
 
 	def set_obstructors(self, obstructors):
 		"""Set new obstructor data for the Vision object.
@@ -83,7 +82,8 @@ class Vision:
 
 		self.cached_radius = radius
 		self.cached_position = eye
-		#self.debug_points = []
+		self.debug_points = []
+		self.debug_linesegs = []
 
 		radius_squared = radius * radius
 
@@ -92,11 +92,8 @@ class Vision:
 
 
 		def sub_segment(small, big):
-			return point_on_lineseg(big[0], big[1], small[0]) and point_on_lineseg(big[0], big[1], small[1])
+			return Math.distance_point_lineseg_squared(small[0], big[0], big[1]) < 0.0001 and Math.distance_point_lineseg_squared(small[1], big[0], big[1]) < 0.0001
 				
-		def point_on_lineseg(a, b, p):
-			crossproduct = (p.y - a.y) * (b.x - a.x) - (p.x - a.x) * (b.y - a.y)
-			return abs(crossproduct) < 0.01 and min(a.x, b.x) <= p.x and p.x <= max(a.x, b.x) and min(a.y, b.y) <= p.y and p.y <= max(a.y, b.y)
 
 		def segment_in_obs(seg):
 			for line_segment in self.obs_segs:
@@ -106,8 +103,11 @@ class Vision:
 
 		def check_visibility(p):
 			bpoints = set(boundary.points)
-			if (eye - p).get_length_squared() > radius_squared and p not in bpoints: return False
 
+			if p not in bpoints:
+				if (eye - p).get_length_squared() > radius_squared: return False
+				if not boundary.contains_point(p): return False 
+			
 			for line_segment in obs_segs:
 				if Math.check_intersect_lineseg_lineseg( eye, p, line_segment[0], line_segment[1]): 
 					if line_segment[0] != p and line_segment[1] != p:
@@ -126,8 +126,8 @@ class Vision:
 		# find all obstructors intersecting the vision polygon
 		boundary_intersection_points = Math.intersect_linesegs_linesegs(obs_segs, zip(boundary.points, boundary.points[1:]) + [(boundary.points[-1], boundary.points[0])])
 		
-		#if self.debug: self.debug_points += [(p, 0xFF0000) for p in visible_points]
-		#if self.debug: self.debug_points += [(p, 0x00FFFF) for p in boundary_intersection_points]
+		if self.debug: self.debug_points.extend([(p, 0xFF0000) for p in visible_points])
+		if self.debug: self.debug_points.extend([(p, 0x00FFFF) for p in boundary_intersection_points])
 
 		# filter boundary_intersection_points to only include visible points 
 		# - need extra code here to handle points on obstructors!
@@ -135,9 +135,8 @@ class Vision:
 			i = 0
 			while i < len(boundary_intersection_points):
 				p = boundary_intersection_points[i]
-				vis = True
 				
-				if not point_on_lineseg(line_segment[0], line_segment[1], p) and Math.check_intersect_lineseg_lineseg(eye, p, line_segment[0], line_segment[1]):
+				if Math.distance_point_lineseg_squared(p, line_segment[0], line_segment[1]) > 0.0001 and Math.check_intersect_lineseg_lineseg(eye, p, line_segment[0], line_segment[1]):
 					boundary_intersection_points.remove(p)
 				else:
 					i+=1
@@ -155,23 +154,26 @@ class Vision:
 			n = poly.points[ (i+1) % len(poly.points) ]
 
 			# intersect visible point with obstructors and boundary polygon
-			intersections = Math.intersect_linesegs_ray(obs_segs, eye, c) + Math.intersect_poly_ray(boundary.points, eye, c)
+			intersections = set(Math.intersect_linesegs_ray(obs_segs, eye, c) + Math.intersect_poly_ray(boundary.points, eye, c))
 
+			intersections = [ip for ip in intersections if ip != c and boundary.contains_point(ip)]
+
+
+			if self.debug: self.debug_points.extend([(pt, 0x00FF00) for pt in intersections])
 			if intersections:
-				# find closest intersection point and add it to point list
-				closest_intersection = closest_points(intersections, eye)[0]
+
+				intersection = min(intersections, key=lambda p: (p - eye).length_squared)
+
+				#if self.debug: self.debug_linesegs.append((0xFF00FF, [eye, intersection]))
 
 				#if self.debug: print "%d prev: %s current: %s next: %s" % (i, p, c, n)
-
-				if (eye - closest_intersection).get_length_squared() > radius_squared:
-					closest_intersection = (closest_intersection - eye).normalize() * radius + eye
 
 				sio_pc = segment_in_obs((p,c))
 				sio_cn = segment_in_obs((c,n))
 
 				if not sio_pc:
 					#if self.debug: print "insert %s at %d" % (closest_intersection, i)
-					poly.points.insert(i, closest_intersection)
+					poly.points.insert(i, intersection)
 					i+=1
 
 
@@ -185,11 +187,11 @@ class Vision:
 				elif sio_pc and not sio_cn:
 					
 					#if self.debug: print "insert %s at %d (+)" % (closest_intersection, i+1)
-					poly.points.insert(i+1, closest_intersection)
+					poly.points.insert(i+1, intersection)
 					i+=1
 
 				#elif self.debug:
-				#	print "no insert at %i" % i
+					#print "no insert at %i" % i
 
 
 			i+=1
