@@ -77,6 +77,9 @@ body {
 	color: #fff;
 
 	border-bottom: 1px solid #000033;
+	
+	position: relative;
+	height: 75px
 
 }
 
@@ -89,11 +92,7 @@ body {
 	height: 75px;
 	float: left;
 	background: url(../images/logo.png) no-repeat;
-}
-
-#title nav {
-	position: relative;
-	height: 75px
+	z-index:999;
 }
 
 #title nav ul {
