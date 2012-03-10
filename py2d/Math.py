@@ -434,6 +434,11 @@ class Polygon(object):
 	def offset(polys, amount, tip_decorator=tip_decorator_pointy, debug_callback=None):
 		"""Shrink or grow a polygon by a given amount.
 
+		Reference:
+		Xiaorui Chen and Sara McMains. Polygon Offsetting by Computing Winding Numbers
+		Proceedings of IDETC/CIE 2005. ASME 2005 International Design Engineering Technical Conferences &
+		Computers and Information in Engineering Conference
+
 		@type polys: List
 		@param polys: The list of polygons to offset. Counter-clockwise polygons will be treated as islands, clockwise polygons as holes.
 
@@ -636,56 +641,225 @@ class Polygon(object):
 
 		return output
 
+	@staticmethod
+	def convex_decompose(polygon, holes=[], debug_callback=None):
+		"""Decompose a polygon into convex parts
+
+		Reference:
+		Jose Fernandez, Boglarka Toth, Lazaro Canovas and Blas Pelegrin. A practical algorithm for decomposing polygonal domains into convex polygons by diagonals
+		Trabajos de Investigacion Operativa Volume 16, Number 2, 367-387.
+		doi 10.1007/s11750-008-0055-2
+
+		@type polygon: Polygon
+		@param polygon: The possible concave polygon to decompose.
+
+		@type holes: List
+		@param holes: A list of polygons inside of polygon to be considered as holes 
+		"""
+
+		def dbg(p, c, t):
+			if debug_callback: debug_callback(p,c,t)
+
+		if polygon.is_self_intersecting(): return []
+		if polygon.is_convex(): return [polygon]
+
+		if not polygon.is_clockwise(): polygon = polygon.clone().flip()
+
+		p = [v for v in polygon.points]
+		out = []
+
+		def check_decomp(l, p_minus_l, p):
+			"""check the decomposition l of polygon p"""
+			xes = [v.x for v in l] 
+			x_min,x_max = min(xes), max(xes)
+			
+			yes = [v.y for v in l]
+			y_min,y_max = min(yes), max(yes)
+
+			def is_notch(v):
+				i = p.index(v)
+				return not point_orientation(p[i-1], p[i], p[(i+1) % len(p)])
+
+			# extra criterion MP3: only accept if at least one of the diagonal points is a notch
+			if not (is_notch(l[0]) or is_notch(l[1])): return False
+			if not Polygon.is_convex_s(l): return False
+
+			# find only notches in p_minus_l that are within the axis-aligned bounding box of l
+			pts = (v for v in p_minus_l if v.x <= x_max and v.x >= x_min and v.y <= y_max and v.y >= y_min and is_notch(v))
+
+			# decomposition is invalid if any point in p is in l
+			if pts:
+
+
+				for v in pts:
+					if Polygon.contains_point_s(l,v): return False
+
+				return True
+			else:
+				return True
+
+		def handle_holes(l, d_a, d_b):
+
+			# TODO add hole handling!
+			if holes: raise NotImplementedError()
+
+			return True
+
+		def try_decompose(i_start):
+			"""try to decompose p by a convex polygon starting at index i_start"""
+
+			lookat = 1
+
+			dbg(p[i_start], (0,255,0), "start for %d" % i_start)
+
+			# find the next notch index
+			i_extend = next( ( i for i in range(i_start+1, len(p)) + range(0,i_start+1) if not point_orientation( p[i-1], p[i], p[(i+1) % len(p)] ) ) )
+
+			# build provisional l
+			l = p[i_start:i_extend+1] if i_start < i_extend else p[i_start:] + p[:i_extend+1]
+
+			if l: dbg(l[-1], (255,0,0), "tempend for %d at %d" % (i_start, i_extend))
+			
+			# remove elements from the end of l until we have a valid decomposition
+			p_minus_l = [v for v in p if v not in l]
+			while len(l) > 2 and not check_decomp(l, p_minus_l, p):
+				l_pop = l.pop()
+				p_minus_l.insert(0, l_pop)
+
+
+			# try to extend l counter-clockwise - find next notch
+			i_extend2 = next( ( i for i in range(i_start,-1,-1) + range(len(p)-1,i_start, -1) if not point_orientation( p[i-1], p[i], p[(i+1) % len(p)] ) ) )
+
+			l2 =  p[i_extend2:] + p[:i_start] if i_extend2 > i_start else p[i_extend2:i_start] 
+
+			if l2: dbg(l2[0], (255,255,0), "tempend2 for %d at %d" % (i_start, i_extend2))
+
+			l = l2 + l
+			
+			# remove elements from the start of l until we have a valid decomposition
+			p_minus_l = [v for v in p if v not in l]
+			while len(l) > 2 and not check_decomp(l, p_minus_l, p):
+				p_minus_l.append(l[0])
+				del l[0]
+
+			if l: dbg(l[-1], (255,0,255), "end for %d at %d" % (i_start, i_extend))
 	
+			
+			# do we still have enough points for a convex poly? if not, give up for this starting point
+			if len(l) <= 2: return False
+			
+			# we now have a diagonal l[0] , l[-1] creating the convex poly l
+
+			# Does the diagonal cut a hole or does the new polygon contain a hole? if so, incorporate and try again
+			if not handle_holes(l, l[0], l[-1]): return False
+
+			# we didn't cross or contain any holes, make a poly and remove extaneous points
+			for v in l[1:-1]: p.remove(v)
+			out.append(Polygon.from_pointlist(l))
+
+			return True
+
+		i = 0
+		while len(p) > 3 and not Polygon.is_convex_s(p):
+			if not try_decompose(i):
+				i+= 1
+
+			i = i % len(p)
+
+
+		if len(p) >= 3:
+			out.append(Polygon.from_pointlist(p))
+		elif len(p) > 0:
+			raise Exception("There are some points left over: %s" % p)
+
+		return out
+
+	def is_self_intersecting(self):
+
+		for i in range(len(self.points)):
+			for j in range(i+1, len(self.points)):
+				a = self.points[i]
+				b = self.points[(i+1)%len(self.points)]
+				c = self.points[j]
+				d = self.points[(j+1)%len(self.points)]
+
+				if not (b == c or d == a):
+					if check_intersect_lineseg_lineseg(a, b, c, d): return True
+
+		return False
 
 	def is_clockwise(self):
 		"""Determines whether the polygon has a clock-wise orientation."""
+		return Polygon.is_clockwise_s(self.points)
 
+	@staticmethod
+	def is_clockwise_s(pts):
 		# get index of point with minimal x value
-		i_min = min(xrange(len(self.points)), key=lambda i: self.points[i].x)
+		i_min = min(xrange(len(pts)), key=lambda i: pts[i].x)
 	
 		# get previous, current and next points
-		a = self.points[i_min-1]
-		b = self.points[i_min]
-		c = self.points[(i_min+1) % len(self.points)]
+		a = pts[i_min-1]
+		b = pts[i_min]
+		c = pts[(i_min+1) % len(pts)]
 
 		return point_orientation(a,b,c)
+
+
+	def is_convex(self):
+		"""Determines whether the polygon is convex."""
+		return Polygon.is_convex_s(self.points)
+	
+	@staticmethod
+	def is_convex_s(poly_points):
+		"""Determines whether a sequence of points forms a convex polygon."""
+		# get orientation of first point
+		ori = point_orientation(poly_points[-1], poly_points[0], poly_points[1])
+
+		for i in range(1,len(poly_points)):
+			p, c, n = poly_points[i-1], poly_points[i], poly_points[(i+1) % len(poly_points)]
+			
+			if point_orientation(p,c,n) != ori:
+				return False
+
+		return True
 
 
 	def flip(self):
 		"""Reverses the orientation of the polygon"""
 		self.points.reverse()
+		return self
 
 	def contains_point(self, p):
 		"""Checks if p is contained in the polygon, or on the boundary.
 		
 		@return: 0 if outside, 1 if in the polygon, 2 if on the boundary.
 		"""
+		return Polygon.contains_point_s(self.points, p)
+
+	@staticmethod
+	def contains_point_s(pts, p) :
+		"""Checks if the polygon defined by the point list pts contains the point p"""
 
 		# see if we find a line segment that p is on
-		for a,b in zip(self.points[0:], self.points[1:]) + [(self.points[-1], self.points[0])]:
-
+		for a,b in zip(pts[0:], pts[1:]) + [(pts[-1], pts[0])]:
 			d = distance_point_lineseg_squared(p, a, b)
-			if p == Vector(2,2): 
-				print "%s vs. [%s - %s]: %f" % (p, a,b,d)
 			if d < EPSILON * EPSILON: return 2
 
 		# p is not on the boundary, cast ray and intersect to see if we are inside
-		intersections = set(intersect_poly_ray(self.points, p, p + Vector(1,0)))
+		intersections = set(intersect_poly_ray(pts, p, p + Vector(1,0)))
 
 		# filter intersection points that are boundary points
-		for int_point in filter(lambda x: x in self.points, intersections):
+		for int_point in filter(lambda x: x in pts, intersections):
 
-			i = self.points.index(int_point)
-			prv = self.points[i-1]
-			nxt = self.points[(i+1) % len(self.points)]
+			i = pts.index(int_point)
+			prv = pts[i-1]
+			nxt = pts[(i+1) % len(pts)]
 
 			if point_orientation(p, int_point, nxt) == point_orientation(p,int_point, prv):
 				intersections.remove(int_point)
 
 		# we are inside if we have an odd amount of polygon intersections
 		return 1 if len(intersections) % 2 == 1 else 0
-
 
 	def as_tuple_list(self):
 		return [(p.x, p.y) for p in self.points]

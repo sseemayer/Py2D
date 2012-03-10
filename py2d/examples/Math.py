@@ -4,6 +4,115 @@ from pygame.locals import *
 from py2d.Math import *
 import py2d.examples.Main
 
+class Decompose(py2d.examples.Main.Example):
+	"""Convex Decomposition Sample
+
+	Draw a polygon and holes and observe its convex decomposition.
+
+	The currently active polygon is colored white. You can switch active polygons with the number keys 0-9.
+	
+	The polygons are numbered as follows:
+	  0    The Main Polygon (color: green)
+	  1-9  Holes in the Main polygon (color: red)
+
+	The result of the decomposition will be shown in yellow.
+	
+	Key mappings:
+
+	  0-9: Switch active polygon
+	  F: Toggle polygon fill
+
+	  MOUSE1: Add new point to the end of the active polygon
+	  BACKSPACE: Delete the last point of the active polygon
+
+	Have fun!
+	"""
+	def __init__(self, runner):
+		self.runner = runner
+		self.title = "Polygon Decomposition"
+
+		self.polys = [Polygon() for i in range(10)]
+		self.active_poly = 0
+		
+		
+		self.decomp = []
+
+		self.debug = False
+		self.fill = False
+
+		self.update_decomp()
+
+
+	def update(self, time_elapsed):
+		if self.runner.keys[K_BACKSPACE]:
+			
+			self.runner.keys[K_BACKSPACE] = False
+			
+			if self.polys[self.active_poly].points: del(self.polys[self.active_poly].points[-1])
+
+
+			self.update_decomp()
+
+		for i in range(10):
+			key = ord(str(i))
+			if self.runner.keys[key]:
+				self.runner.keys[key] = False
+				self.active_poly = i
+		
+		if self.runner.keys[K_d]:
+			self.runner.keys[K_d] = False
+			self.debug = not self.debug
+
+		if self.runner.keys[K_f]:
+			self.runner.keys[K_f] = False
+			self.fill = not self.fill
+
+	def render(self):
+		
+		
+		self.draw_poly(self.polys[0], 0x00ff00)
+	
+		for h in self.polys[1:]:
+			self.draw_poly(h, 0xff0000)
+
+		for p in self.decomp:
+			self.draw_poly(p, 0xffff00)
+
+		if self.debug:
+			for p,c,t in self.debug_points:
+				self.runner.screen.blit(self.runner.font.render(t, True, c), p.as_tuple())
+
+	def draw_poly(self, poly, color):
+		if len(poly) > 1:
+			if self.fill and len(poly) > 2:
+				pygame.draw.polygon(self.runner.screen, color, poly.as_tuple_list())
+			
+			
+			pygame.draw.lines(self.runner.screen, color, True, poly.as_tuple_list())
+		elif poly.points:
+			pygame.draw.circle(self.runner.screen, color, poly.points[0].as_tuple(), 2)
+
+
+
+	def mouse_down(self, pos, button):
+		if button == 1:
+
+			self.polys[self.active_poly].add_point(Vector(pos[0], pos[1]))
+
+			self.update_decomp()
+
+	def update_decomp(self):
+		self.debug_points = []
+		if len(self.polys[0]) > 2:
+			
+			holes = [h for h in self.polys[1:] if len(h) > 2]
+
+			def debug_point(p,c,t):
+				self.debug_points.append((p,c,t))
+
+			self.decomp = Polygon.convex_decompose(self.polys[0], holes, debug_callback=debug_point)
+		else:
+			self.decomp = []
 
 
 class Offset(py2d.examples.Main.Example):
