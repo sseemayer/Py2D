@@ -5,23 +5,21 @@ from py2d.Math import *
 import py2d.examples.Main
 
 class Draw(py2d.examples.Main.Example):
+	"""Polygon Drawing Sample
+	
+	Draw a polygon outline with the mouse.
+
+	Key mappings:
+
+	  MOUSE1: Add new point to the end of the active polygon
+	  BACKSPACE: Delete the last point of the active polygon
+
+	Have fun!
+	"""
 
 	def __init__(self, runner):
 		self.runner = runner
 		self.title = "Simple Drawing"
-		self.help = """
-		Polygon Drawing Sample
-		-----------------------------------------
-		
-		Draw a polygon outline with the mouse.
-
-		Key mappings:
-
-		  MOUSE1: Add new point to the end of the active polygon
-		  BACKSPACE: Delete the last point of the active polygon
-
-		Have fun!
-		"""
 
 		self.poly = Polygon()
 

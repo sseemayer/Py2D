@@ -7,29 +7,26 @@ import py2d.examples.Main
 
 
 class Offset(py2d.examples.Main.Example):
+	"""Polygon Offset Sample
+	
+	Draw a polygon outline with the mouse. Py2D will calculate offset polygons.
+
+	Key mappings:
+
+	  MOUSE1: Add new point to the end of the active polygon
+	  BACKSPACE: Delete the last point of the active polygon
+
+	  c: Increase offset amount
+	  x: Decrease offset amount
+
+	  F: Toggle polygon fill
+
+	Have fun!
+	"""
 
 	def __init__(self, runner):
 		self.runner = runner
 		self.title = "Polygon Offset"
-		self.help = """
-		Polygon Offset Sample
-		-----------------------------------------
-		
-		Draw a polygon outline with the mouse. Py2D will calculate offset polygons.
-
-		Key mappings:
-
-		  MOUSE1: Add new point to the end of the active polygon
-		  BACKSPACE: Delete the last point of the active polygon
-
-		  c: Increase offset amount
-		  x: Decrease offset amount
-
-		  F: Toggle polygon fill
-
-		Have fun!
-		"""
-
 		self.poly = Polygon()
 		
 		self.update_offset()
@@ -126,36 +123,32 @@ class Offset(py2d.examples.Main.Example):
 
 
 class Boolean(py2d.examples.Main.Example):
+	"""Boolean Operations sample
 
+	Draw polygons A and B and observe their intersections, unions and differences.
+	
+	The currently active polygon is colored white. You can switch active polygons with the SPACE BAR.
+	If not active, the polygon A will be colored red. Polygon B will be colored green.
+	
+	The result of the boolean operation will be shown in yellow.
+	
+	Key mappings:
+
+	  SPACE BAR: Toggle active polygon
+	  F: Toggle polygon fill
+
+	  U: Switch to Union mode, show the union of A and B
+	  I: Switch to Intersection mode, show the intersection of A and B
+	  D: Switch to Difference mode, show A - B
+
+	  MOUSE1: Add new point to the end of the active polygon
+	  BACKSPACE: Delete the last point of the active polygon
+
+	Have fun!
+	"""
 	def __init__(self, runner):
 		self.runner = runner
-
 		self.title = "Boolean Operations"
-		self.help = """
-		Boolean Operations sample
-		-----------------------------------------
-
-		Draw polygons A and B and observe their intersections, unions and differences.
-		
-		The currently active polygon is colored white. You can switch active polygons with the SPACE BAR.
-		If not active, the polygon A will be colored red. Polygon B will be colored green.
-		
-		The result of the boolean operation will be shown in yellow.
-		
-		Key mappings:
-
-		  SPACE BAR: Toggle active polygon
-		  F: Toggle polygon fill
-
-		  U: Switch to Union mode, show the union of A and B
-		  I: Switch to Intersection mode, show the intersection of A and B
-		  D: Switch to Difference mode, show A - B
-
-		  MOUSE1: Add new point to the end of the active polygon
-		  BACKSPACE: Delete the last point of the active polygon
-
-		Have fun!
-		"""
 
 
 		#self.poly_a = Polygon.from_tuples([(0,0), (4,0), (4,4), (0, 4)])

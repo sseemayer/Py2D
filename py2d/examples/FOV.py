@@ -6,18 +6,16 @@ from py2d.Math import *
 import py2d.examples.Main
 
 class FOV(py2d.examples.Main.Example):
+	"""Field of View Example
+
+	Move your mouse and watch how the obstacles affect the field of view
+
+	Have fun!
+	"""
 
 	def __init__(self, runner):
 		self.runner = runner
 		self.title = "Field of View"
-		self.help = """
-		Field of View Example
-		-----------------------------------------
-	
-		Move your mouse and watch how the obstacles affect the field of view
-
-		Have fun!
-		"""
 		
 		center = Vector( py2d.examples.Main.SCREEN_WIDTH / 2, py2d.examples.Main.SCREEN_HEIGHT / 2)
 
@@ -52,6 +50,7 @@ class FOV(py2d.examples.Main.Example):
 			for c, ls in self.vision.debug_linesegs:
 				pygame.draw.lines(self.runner.screen, c, False, [ p.as_tuple() for p in ls])
 
+		pygame.draw.ellipse(self.runner.screen, 0x000000, pygame.Rect(self.eye.x - 2, self.eye.y - 2, 4,4))
 
 	def mouse_move(self, pos, rel, buttons): 
 		# add 0.01 to avoid colinearity

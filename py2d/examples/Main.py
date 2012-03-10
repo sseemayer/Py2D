@@ -89,9 +89,9 @@ class ExampleRunner(object):
 		if self.show_help:
 			self.screen.fill(TEXT_BACKGROUND)
 			if self._example:
-				for l, line in enumerate([s.replace("\t","") for s in self._example.help.split("\n")]):
+				for l, line in enumerate([s.replace("\t","") for s in self._example.__doc__.split("\n")]):
 					surf = self.font.render(line, True, TEXT_COLOR, TEXT_BACKGROUND) 
-					self.screen.blit(surf, (10, 15 * l) )
+					self.screen.blit(surf, (10, 15 * l + 10) )
 
 		else:
 
