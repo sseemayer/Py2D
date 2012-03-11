@@ -840,6 +840,7 @@ class Polygon(object):
 
 		#print "-----"
 
+		if Polygon.is_convex_s(p) and holes: handle_holes_convex()
 
 		i = 0
 		while len(p) > 3 and not Polygon.is_convex_s(p):
@@ -851,6 +852,7 @@ class Polygon(object):
 			#print "......"
 
 			i = i % len(p)
+
 
 
 		if len(p) >= 3:
