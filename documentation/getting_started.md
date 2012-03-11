@@ -25,9 +25,16 @@ You can see some functionality of Py2D in the examples package. Just run the scr
 Example names are given as <code>Packagename.Classname</code> - Valid example names are:
 
 * **Logo.Logo** - A bouncing Py2D logo made of vectors. Neat!
+* **Logo.Opaque** - A bouncing Py2D logo made of filled polygons. Demonstrates convex decomposition of text.
 * **Draw.Draw** - Draw polygons using the mouse
 * **Math.Boolean** - Demonstrate boolean operations on polygons
 * **Math.Offset** - Demonstrate polygon offsetting (also known as polygon buffering)
+* **Math.Decompose** - Demonstrate convex decomposition
 * **FOV.FOV** - Field of View calculation
+* **Navigation.Mesh** - Navigation Mesh generation and pathfinding
 
 If you get lost, press F1 in the example runner to display a help text. And remember to use the source, Luke!
+
+<!--
+vim: filetype=markdown
+-->
