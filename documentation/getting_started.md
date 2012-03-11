@@ -32,6 +32,7 @@ Example names are given as <code>Packagename.Classname</code> - Valid example na
 * **Math.Decompose** - Demonstrate convex decomposition
 * **FOV.FOV** - Field of View calculation
 * **Navigation.Mesh** - Navigation Mesh generation and pathfinding
+* **Navigation.Walker** - Movement of an agent on a navigation path 
 
 If you get lost, press F1 in the example runner to display a help text. And remember to use the source, Luke!
 
