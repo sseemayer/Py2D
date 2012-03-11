@@ -51,8 +51,8 @@ class NavMesh(object):
 					
 					dist = distance_function(p_a, p_b)
 
-					p_a.neighbors[p_b] = dist
-					p_b.neighbors[p_a] = dist
+					p_a.neighbors[p_b] = (dist, e)
+					p_b.neighbors[p_a] = (dist, e)
 
 		return NavMesh(polygons)
 
@@ -64,7 +64,7 @@ class NavMesh(object):
 		"""
 
 		# initialize with simple distances
-		self._nav_data = [[ (self._polygons[i].neighbors[p],j) if p in self._polygons[i].neighbors.keys() else (float('inf'),-1) for j,p in enumerate(self._polygons) ] for i in range(len(self._polygons))]
+		self._nav_data = [[ (self._polygons[i].neighbors[p][0],j) if p in self._polygons[i].neighbors.keys() else (float('inf'),-1) for j,p in enumerate(self._polygons) ] for i in range(len(self._polygons))]
 
 		# floyd-warshall algorithm to compute all-pair shortest paths
 		for k in range(len(self._polygons)):
@@ -109,7 +109,7 @@ class NavMesh(object):
 
 		out = [i] + get_path_rec(i,j)
 
-		return [self._polygons[i] for i in out]
+		return NavPath(self, [self._polygons[i] for i in out])
 
 	def get_data(self, i, j):
 		return self._nav_data[i][j]
@@ -136,6 +136,61 @@ class NavPolygon(Math.Polygon):
 		self.neighbors = {}
 
 	
+class NavPath(object):
+	"""Class representing a solved navigation path"""
+	def __init__(self, mesh, polygons):
+		self._mesh = mesh
+		self._polygons = polygons
 
+	
+	def get_next_move_to(self, position, final_target):
+		"""Get the next point an agent following this path should move to.
 
+		Reference: Simple Stupid Funnel Algorithm
+		http://digestingduck.blogspot.com/2010/03/simple-stupid-funnel-algorithm.html
 
+		@type position: Vector
+		@param position: The position of the agent following the path
+		"""
+
+		current_polys = [] 
+		for poly in self._polygons:
+			if poly.contains_point(position):
+				current_polys.append(poly)
+
+		i = max((self._polygons.index(p) for p in current_polys))
+		
+		if i == len(self._polygons)-1: return final_target
+
+		edge = self._polygons[i].neighbors[self._polygons[i+1]][1]
+		
+		left, right = (edge[0], edge[1]) if Math.point_orientation(position, edge[0], edge[1]) else (edge[1], edge[0])
+
+		for j in range(i+1, len(self._polygons)-1):
+			edge = self._polygons[j].neighbors[self._polygons[j+1]][1]
+			new_left, new_right = (edge[0], edge[1]) if Math.point_orientation(position, edge[0], edge[1]) else (edge[1], edge[0])
+		
+			# make the funnel smaller
+			if Math.point_orientation(position, left, new_left): left = new_left
+			if not Math.point_orientation(position, left, right): 
+				return right
+			
+			
+			if not Math.point_orientation(position, right, new_right): right = new_right
+			if not Math.point_orientation(position, left, right): 
+				return left
+
+		if Math.point_orientation(position, left, final_target): left = final_target
+		if not Math.point_orientation(position, left, right):
+			return right
+
+		if not Math.point_orientation(position, right, final_target): right = final_target
+		if not Math.point_orientation(position, left, right):
+			return left
+
+		return final_target
+
+	def get_polygons(self):
+		return self._polygons
+
+	polygons = property(get_polygons)
