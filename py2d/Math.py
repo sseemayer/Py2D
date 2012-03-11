@@ -238,6 +238,11 @@ class Polygon(object):
 		if p.is_clockwise(): p.flip()
 		return p
 
+	def clone_cw(self):
+		p = self.clone()
+		if not p.is_clockwise(): p.flip()
+		return p
+
 	@staticmethod
 	def boolean_operation(polygon_a, polygon_b, operation):
 		"""Perform a boolean operation on two polygons.
@@ -651,7 +656,7 @@ class Polygon(object):
 		doi 10.1007/s11750-008-0055-2
 
 		@type polygon: Polygon
-		@param polygon: The possible concave polygon to decompose.
+		@param polygon: The possibly concave polygon to decompose.
 
 		@type holes: List
 		@param holes: A list of polygons inside of polygon to be considered as holes 
@@ -661,38 +666,41 @@ class Polygon(object):
 			if debug_callback: debug_callback(p,c,t)
 
 		if polygon.is_self_intersecting(): return []
-		if polygon.is_convex(): return [polygon]
+		if polygon.is_convex() and not holes: return [polygon]
 
 		if not polygon.is_clockwise(): polygon = polygon.clone().flip()
 
 		p = [v for v in polygon.points]
 		out = []
 
+		class G: pass
+		g = G()
+		g.del_index = 0
+		
 		def check_decomp(l, p_minus_l, p):
 			"""check the decomposition l of polygon p"""
-			xes = [v.x for v in l] 
+			l_v = [p[v] for v in l]
+			
+			xes = [v.x for v in l_v] 
 			x_min,x_max = min(xes), max(xes)
 			
-			yes = [v.y for v in l]
+			yes = [v.y for v in l_v]
 			y_min,y_max = min(yes), max(yes)
 
-			def is_notch(v):
-				i = p.index(v)
+			def is_notch(i):
 				return not point_orientation(p[i-1], p[i], p[(i+1) % len(p)])
 
 			# extra criterion MP3: only accept if at least one of the diagonal points is a notch
-			if not (is_notch(l[0]) or is_notch(l[1])): return False
-			if not Polygon.is_convex_s(l): return False
+			if not (is_notch(l[0]) or is_notch(l[-1])): return False
+			if not Polygon.is_convex_s(l_v): return False
 
 			# find only notches in p_minus_l that are within the axis-aligned bounding box of l
-			pts = (v for v in p_minus_l if v.x <= x_max and v.x >= x_min and v.y <= y_max and v.y >= y_min and is_notch(v))
+			pts = (v for v in p_minus_l if p[v].x <= x_max and p[v].x >= x_min and p[v].y <= y_max and p[v].y >= y_min and is_notch(v))
 
 			# decomposition is invalid if any point in p is in l
 			if pts:
-
-
 				for v in pts:
-					if Polygon.contains_point_s(l,v): return False
+					if Polygon.contains_point_s(l_v,p[v]) == 1: return False
 
 				return True
 			else:
@@ -701,68 +709,146 @@ class Polygon(object):
 		def handle_holes(l, d_a, d_b):
 
 			# TODO add hole handling!
-			if holes: raise NotImplementedError()
 
-			return True
+			closest_hole = None
+			intersecting = True
+
+
+			# check if the polygon intersects a hole
+			closest_intersection = None
+			while intersecting:
+				intersecting = False
+				for hole in holes:
+					for a,b in zip(hole, hole[1:]) + [(hole[-1],hole[0])]:
+						i = intersect_lineseg_lineseg(d_a, d_b, a, b)
+						if i and i not in [a,b]:
+							if not closest_intersection or (closest_intersection - d_b).length_squared > (i-d_b).length_squared:
+								closest_intersection = i
+								d_a = min([a,b], key = lambda v: (v-d_b).length_squared)
+								closest_hole = hole
+							intersecting = True
+
+			# check if the polygon contains a hole
+			if not closest_hole:
+				closest_intersection = None
+				for hole in holes:
+					if Polygon.contains_point_s(l, hole[0]):
+							i = min(hole, key = lambda v: (v- d_b).length_squared)
+							if not closest_intersection or (closest_intersection - d_b).length_squared > (i-d_b).length_squared:
+								closest_intersection = i
+								d_a = i
+								closest_hole = hole
+
+			if closest_hole: 
+				absorb_hole(d_b, closest_hole, d_a)
+				return False
+			else:
+				return True
+
+		def handle_holes_convex():
+			d_b = p[0]
+			
+			closest_intersection = None
+			for hole in holes:
+				i = min(hole, key=lambda v: (v-d_b).length_squared)
+				if not closest_intersection or (closest_intersection - d_b).length_squared > (i-d_b).length_squared:
+					closest_intersection = i
+					d_a = i
+					closest_hole = hole
+
+			absorb_hole(d_b, closest_hole, d_a)
+
+
+		def absorb_hole(d_b, closest_hole, d_a):
+
+			holes.remove(closest_hole)
+			if Polygon.is_clockwise_s(closest_hole): closest_hole = closest_hole.clone_ccw()
+			
+			i = closest_hole.points.index(d_a)
+			j = p.index(d_b)
+
+			extension = [d_b] + closest_hole.points[i:] + closest_hole.points[:i+1]
+
+			p[j:j] = extension
+
+			#print "hole!"
+
+
+
 
 		def try_decompose(i_start):
 			"""try to decompose p by a convex polygon starting at index i_start"""
 
 			lookat = 1
 
-			dbg(p[i_start], (0,255,0), "start for %d" % i_start)
 
 			# find the next notch index
 			i_extend = next( ( i for i in range(i_start+1, len(p)) + range(0,i_start+1) if not point_orientation( p[i-1], p[i], p[(i+1) % len(p)] ) ) )
 
 			# build provisional l
-			l = p[i_start:i_extend+1] if i_start < i_extend else p[i_start:] + p[:i_extend+1]
+			l = range(i_start,i_extend+1) if i_start < i_extend else range(i_start,len(p)) + range(0,i_extend+1)
 
-			if l: dbg(l[-1], (255,0,0), "tempend for %d at %d" % (i_start, i_extend))
+			#print "l=%s" % l
 			
 			# remove elements from the end of l until we have a valid decomposition
-			p_minus_l = [v for v in p if v not in l]
+			p_minus_l = [k for k in range(len(p)) if k not in l]
 			while len(l) > 2 and not check_decomp(l, p_minus_l, p):
 				l_pop = l.pop()
 				p_minus_l.insert(0, l_pop)
 
+			#print "l'=%s" % l 
 
 			# try to extend l counter-clockwise - find next notch
 			i_extend2 = next( ( i for i in range(i_start,-1,-1) + range(len(p)-1,i_start, -1) if not point_orientation( p[i-1], p[i], p[(i+1) % len(p)] ) ) )
 
-			l2 =  p[i_extend2:] + p[:i_start] if i_extend2 > i_start else p[i_extend2:i_start] 
+			l2 =  range(i_extend2,len(p)) + range(0,i_start) if i_extend2 > i_start else range(i_extend2,i_start)
 
-			if l2: dbg(l2[0], (255,255,0), "tempend2 for %d at %d" % (i_start, i_extend2))
+			#print "l2=%s" % l2
 
 			l = l2 + l
 			
 			# remove elements from the start of l until we have a valid decomposition
-			p_minus_l = [v for v in p if v not in l]
+			p_minus_l = [k for k in range(len(p)) if k not in l]
 			while len(l) > 2 and not check_decomp(l, p_minus_l, p):
 				p_minus_l.append(l[0])
 				del l[0]
 
-			if l: dbg(l[-1], (255,0,255), "end for %d at %d" % (i_start, i_extend))
-	
 			
+			#print "l*=%s" % l
+			
+			#print "i_start=%d, i_extend=%d, i_extend2=%d" % (i_start, i_extend, i_extend2)
+
 			# do we still have enough points for a convex poly? if not, give up for this starting point
 			if len(l) <= 2: return False
 			
 			# we now have a diagonal l[0] , l[-1] creating the convex poly l
 
+
 			# Does the diagonal cut a hole or does the new polygon contain a hole? if so, incorporate and try again
-			if not handle_holes(l, l[0], l[-1]): return False
+			if not handle_holes( [p[v] for v in l], p[l[0]], p[l[-1]]): return False
 
 			# we didn't cross or contain any holes, make a poly and remove extaneous points
-			for v in l[1:-1]: p.remove(v)
-			out.append(Polygon.from_pointlist(l))
+			#print "poly! %s" % l
+			
+			out.append(Polygon.from_pointlist([p[k] for k in l]))
+			for v in sorted(l[1:-1], reverse=True): 
+				dbg(p[v], (255,0,255), "del %d" % g.del_index)
+				g.del_index += 1
+				del p[v]
 
 			return True
+
+		#print "-----"
+
 
 		i = 0
 		while len(p) > 3 and not Polygon.is_convex_s(p):
 			if not try_decompose(i):
 				i+= 1
+			
+			if Polygon.is_convex_s(p) and holes: handle_holes_convex()			
+
+			#print "......"
 
 			i = i % len(p)
 

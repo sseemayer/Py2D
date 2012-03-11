@@ -33,7 +33,7 @@ class Decompose(py2d.examples.Main.Example):
 
 		self.polys = [Polygon() for i in range(10)]
 		self.active_poly = 0
-		
+	
 		
 		self.decomp = []
 
@@ -70,21 +70,21 @@ class Decompose(py2d.examples.Main.Example):
 	def render(self):
 		
 		
-		self.draw_poly(self.polys[0], 0x00ff00)
+		self.draw_poly(self.polys[0], 0x00ff00, False)
 	
 		for h in self.polys[1:]:
-			self.draw_poly(h, 0xff0000)
+			self.draw_poly(h, 0xff0000, False)
 
 		for p in self.decomp:
-			self.draw_poly(p, 0xffff00)
+			self.draw_poly(p, 0xffff00, self.fill)
 
 		if self.debug:
 			for p,c,t in self.debug_points:
 				self.runner.screen.blit(self.runner.font.render(t, True, c), p.as_tuple())
 
-	def draw_poly(self, poly, color):
+	def draw_poly(self, poly, color, fill):
 		if len(poly) > 1:
-			if self.fill and len(poly) > 2:
+			if fill and len(poly) > 2:
 				pygame.draw.polygon(self.runner.screen, color, poly.as_tuple_list())
 			
 			
