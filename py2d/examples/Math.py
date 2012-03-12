@@ -34,9 +34,6 @@ class Decompose(py2d.examples.Main.Example):
 		self.polys = [Polygon() for i in range(10)]
 		self.active_poly = 0
 	
-		self.polys[0] = Polygon.from_pointlist([ Vector(v.x * 10 - 150, v.y * 10 + 50) for v in  [Vector(52.812840, 27.997820),Vector(52.812840, -0.002180),Vector(64.412840, -0.002180),Vector(68.672840, 5.937820),Vector(70.092840, 13.677820),Vector(68.762840, 21.557820),Vector(64.772840, 27.997820),Vector(52.812840, 27.997820)]])
-		self.polys[1] = Polygon.from_pointlist([ Vector(v.x * 10 - 150, v.y * 10 + 50) for v in  [Vector(58.252850, 23.357820),Vector(61.852850, 23.357820),Vector(63.612850, 19.277820),Vector(64.292850, 13.957820),Vector(63.702840, 8.527820),Vector(61.932840, 4.797820),Vector(58.252840, 4.797820),Vector(58.252840, 23.357820)]]) 
-		
 		self.decomp = []
 
 		self.debug = False
