@@ -1,0 +1,19 @@
+
+<div class="toc">
+	<span>Table of Contents</span>
+	<ol id="toc">
+
+	</ol>
+</div>
+
+<script type="text/javascript" src="{{ page.root}}js/jquery.tableofcontents.min.js">
+
+</script>
+
+<script type="text/javascript"> 
+	$(document).ready(function()     { 
+		$("#toc").tableOfContents( $("#content"), {
+			startLevel: 2,
+		});
+	}); 
+</script>
