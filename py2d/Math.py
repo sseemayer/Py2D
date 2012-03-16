@@ -1011,6 +1011,10 @@ class Transform(object):
 		                  [math.sin(phi), math.cos(phi), 0],
 			          [0, 0, 1]])
 
+	@staticmethod
+	def rotate_around(cx, cy, phi):
+		"""Get a transformation that rotates around (cx, cy) by phi"""
+		return Transform.move(cx, cy) * Transform.rotate(phi) * Transform.move(-cx, -cy)
 
 	@staticmethod
 	def scale(sx, sy):
@@ -1018,7 +1022,20 @@ class Transform(object):
 		return Transform([[sx, 0, 0],
 		                  [0, sy, 0],
 			          [0, 0, 1]])
+	@staticmethod
+	def mirror_x():
+		"""Get a transformation that mirrors along the x axis"""
+		return Transform([[-1, 0, 0],
+				  [ 0, 1, 0],
+				  [ 0, 0, 1]])
 
+	@staticmethod
+	def mirror_y():
+		"""Get a transformation that mirrors along the y axis"""
+		return Transform([[ 1, 0, 0],
+				  [ 0,-1, 0],
+				  [ 0, 0, 1]])
+	
 	def __add__(self, b):
 		t = Transform()
 		t.data = [[self.data[x][y] + b.data[x][y] for y in range(3)] for x in range(3)]
