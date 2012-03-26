@@ -27,7 +27,7 @@ class LogoPhysics(py2d.examples.Main.Example):
 
 	def __init__(self, runner):
 		self.runner = runner
-		self.title = "Welcome"
+		self.title = "Py2D with Pymunk physics"
 
 		# get dimensions of multi-polygon list by strategically selected letters :)
 		p = PY2D_LOGO[0][0]
