@@ -1361,6 +1361,9 @@ def distance_point_lineseg_squared(p, a, b):
 	# return min(ap_squared, bp_squared, perpendicular_squared)
 
 
+def distance_point_line(p, a, b):
+	return abs((p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x)) / math.sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y))
+
 def point_in_triangle(p, a,b,c):
 	to = point_orientation(a,b,c)
 	return point_orientation(a,b,p) == to and point_orientation(b,c,p) == to and point_orientation(a,p,c) == to
