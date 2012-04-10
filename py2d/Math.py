@@ -1055,7 +1055,7 @@ class Transform(object):
 			
 			return Vector(x,y)
 
-		else:
+		elif isinstance(val, Transform):
 			data = [[0 for y in range(3)] for x in range(3)]
 			for i in range(3):
 				for j in range(3):
@@ -1063,6 +1063,13 @@ class Transform(object):
 						data[i][j] += self.data[i][k] * val.data[k][j]
 
 			return Transform(data)
+
+		elif isinstance(val, Polygon):
+			p_transform = [ self * v for v in val.points ]
+			return Polygon.from_pointlist(p_transform)
+
+		else: 
+			raise ValueError("Unknown multiplier: %s" % val)
 
 
 def __intersect_line_line_u(p1, p2, q1, q2):
