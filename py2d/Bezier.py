@@ -78,6 +78,39 @@ def flatten_cubic_bezier(p1,p2,c1,c2, max_divisions=None, max_flatness=0.1):
 
 	return out
 
+
+def point_on_quadratic_bezier(p1,p2,c,t):
+	one_minus_t = 1.0 - t
+	one_minus_t_2 = one_minus_t * one_minus_t
+
+	t_2 = t * t
+
+	return p1 * one_minus_t_2 + c * (2 * one_minus_t * t) + p2 * t_2
+
+
+def subdivide_quadratic_bezier(p1,p2,c,t):
+	one_minus_t = 1.0 - t
+	
+	a = p1 * one_minus_t + c * t
+	b = c * one_minus_t + p2 * t
+
+	p = a * one_minus_t + b * t
+
+	return a,p,b
+
+def flatten_quadratic_bezier(p1,p2,c, max_divisions=None, max_flatness=0.1):
+	out = []
+	if not __is_flat(max_divisions, max_flatness, __bezier_flatness(p1,p2,c)):
+		_a,_p,_c = subdivide_quadratic_bezier(p1,p2,c,0.5)
+
+		md_rec = max_divisions - 1 if max_divisions else None
+
+		out.extend(flatten_quadratic_bezier(p1,_p,_a, md_rec, max_flatness))
+		out.append(_p)
+		out.extend(flatten_quadratic_bezier(_p,p2,_c, md_rec, max_flatness))
+
+	return out
+
 def __is_flat(max_divisions, max_flatness, flatness):
 	return (max_divisions == 0) or (max_flatness != None and flatness <= max_flatness)
 
