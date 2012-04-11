@@ -34,7 +34,16 @@ def convert_svg(f, transform=Transform.unit(), bezier_max_divisions=None, bezier
 		m = re.match(r'translate\((?P<x>[0-9.-]+),(?P<y>[0-9.-]+)\)', new_t)
 		if m:
 			x, y = float(m.group("x")), float(m.group("y"))
-			nt = Transform.move(x,y) * transform 
+			nt = Transform.move(x,y) * nt
+
+		m = re.match(r'matrix\((?P<a>[0-9.-]+),(?P<b>[0-9.-]+),(?P<c>[0-9.-]+),(?P<d>[0-9.-]+),(?P<e>[0-9.-]+),(?P<f>[0-9.-]+)\)', new_t)
+		if m:
+			a,b,c,d,e,f = ( float(m.group(l)) for l in "abcdef" )
+
+			import pdb; pdb.set_trace()
+			nt = Transform([[ a, c, e ],
+			                [ b, d, f ],
+					[ 0, 0, 1 ]]) * nt
 
 		return nt
 
@@ -89,13 +98,13 @@ def convert_svg(f, transform=Transform.unit(), bezier_max_divisions=None, bezier
 
 			#print "cmd: %s, pars: %s" % (cmd, pars)
 
-			if cmd == "m":
+			if cmd == "m" or cmd == "l":
 				for p in pars:
 					relative_pos += parse_vec(p)
 					verts.append(relative_pos)
 
 
-			elif cmd == "M":
+			elif cmd == "M" or cmd == "L":
 				for p in pars:
 					relative_pos = parse_vec(p)
 					verts.append(relative_pos)
@@ -119,6 +128,25 @@ def convert_svg(f, transform=Transform.unit(), bezier_max_divisions=None, bezier
 
 					verts.extend(bez)
 
+			elif cmd == "s" or cmd == "S":
+				# shorthand / smooth cubic polybezier
+
+				for i in range(0, len(pars), 2):
+					c2, b = parse_vec(pars[i]), parse_vec(pars[i+1])
+					c1 = relative_pos + (relative_pos - last_control)
+
+					if cmd == "s":
+						# convert to relative
+						c2 += relative_pos
+						b += relative_pos
+
+					bez = flatten_cubic_bezier(relative_pos, b, c1, c2, bezier_max_divisions, bezier_max_flatness)
+
+					last_control = c2
+					relative_pos = b
+
+					verts.extend(bez)
+
 			elif cmd == "z":
 				# close line by only moving relative_pos to first vertex
 				
@@ -131,7 +159,9 @@ def convert_svg(f, transform=Transform.unit(), bezier_max_divisions=None, bezier
 				warnings.warn("Unrecognized SVG path command: %s - path skipped" % cmd)
 				polys = []
 				break
-			
+	
+		if verts:
+			polys.append(transform * Polygon.from_pointlist(verts))
 		#print "----"
 
 		return id, polys
