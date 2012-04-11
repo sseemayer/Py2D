@@ -19,7 +19,7 @@ class SVGConverter(py2d.examples.Main.Example):
 
 		self.polys = []
 
-		for id, polys in convert_svg("py2d/examples/shapes.svg").iteritems():
+		for id, polys in convert_svg("py2d/examples/shapes.svg", bezier_max_divisions = None).iteritems():
 			self.polys.append(polys)
 
 		self.decomp = []

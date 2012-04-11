@@ -1,9 +1,6 @@
 """SVG to Polygon conversion
 
-This is still experimental code and only a tiny subset of SVG is supported. Things that are NOT supported:
-
-	- open line segments
-	- curves of any kind
+This is still experimental code and only a tiny subset of SVG is supported.
 
 Testing files were generated using Inkscape. Make sure to use "Make selected nodes corner" on all polygons to be converted so they contain no problematic SVG path commands!
 """
@@ -12,9 +9,10 @@ from xml.etree import ElementTree
 import re
 import warnings
 from collections import deque
-from Math import Polygon, Vector, Transform
+from py2d.Math import Polygon, Vector, Transform
+from py2d.Bezier import flatten_cubic_bezier, flatten_quadratic_bezier
 
-def convert_svg(f, transform=Transform.unit()):
+def convert_svg(f, transform=Transform.unit(), bezier_max_divisions=None, bezier_max_flatness=0.1):
 	"""Convert an SVG file to a hash of Py2D Polygons. 
 
 	The hash keys will be the ids set to the corresponding <path> elements in the SVG file. 
@@ -82,18 +80,44 @@ def convert_svg(f, transform=Transform.unit()):
 			x,y = s.split(",")
 			return Vector(float(x), float(y))
 
+
 		polys = []
 		verts = []
 		relative_pos = Vector(0.0,0.0)
+		last_control = None
 		for cmd, pars in parse_commands(d):
 
 			#print "cmd: %s, pars: %s" % (cmd, pars)
 
 			if cmd == "m":
-
 				for p in pars:
 					relative_pos += parse_vec(p)
 					verts.append(relative_pos)
+
+
+			elif cmd == "M":
+				for p in pars:
+					relative_pos = parse_vec(p)
+					verts.append(relative_pos)
+
+			elif cmd == "c" or cmd == "C":
+				# create cubic polybezier
+				
+				for i in range(0, len(pars), 3):
+					c1, c2, b = parse_vec(pars[i]), parse_vec(pars[i+1]), parse_vec(pars[i+2])
+
+					if cmd == "c":
+						# convert to relative
+						c1 += relative_pos
+						c2 += relative_pos
+						b += relative_pos
+
+					bez = flatten_cubic_bezier(relative_pos, b, c1, c2, bezier_max_divisions, bezier_max_flatness)
+
+					last_control = c2
+					relative_pos = b
+
+					verts.extend(bez)
 
 			elif cmd == "z":
 				# close line by only moving relative_pos to first vertex
@@ -101,8 +125,7 @@ def convert_svg(f, transform=Transform.unit()):
 				polys.append(transform * Polygon.from_pointlist(verts))
 				relative_pos = verts[0]
 				verts = []
-
-				pass
+				
 
 			else:
 				warnings.warn("Unrecognized SVG path command: %s - path skipped" % cmd)
