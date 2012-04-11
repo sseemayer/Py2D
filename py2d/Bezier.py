@@ -115,4 +115,4 @@ def __is_flat(max_divisions, max_flatness, flatness):
 	return (max_divisions == 0) or (max_flatness != None and flatness <= max_flatness)
 
 def __bezier_flatness(p1,p2, *c):
-	return min(distance_point_line(cp, p1, p2) for cp in c)
+	return max(distance_point_line(cp, p1, p2) for cp in c)
