@@ -154,13 +154,15 @@ class Mesh(py2d.examples.Main.Example):
 
 
 class Walker(py2d.examples.Main.Example):
-	"""Navigation mesh generation sample
+	"""Navigation walker sample
 
 	Draw a polygon and holes and observe the generated navigation mesh. 
 	The generated mesh will be colored light gray with the connectivity shown in cyan.
 
 	You can switch active polygons with the number keys 0-9.
 	
+	Then, use B and E to set start and end positions for a walker object
+
 	The polygons are numbered as follows:
 	  0    The Main Polygon (color: green)
 	  1-9  Holes in the Main polygon (color: red)
