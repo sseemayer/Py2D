@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 
-import py2d.Math
+from py2d.Math import *
 import py2d.examples.Main
 
 class Decompose(py2d.examples.Main.Example):
@@ -31,7 +31,7 @@ class Decompose(py2d.examples.Main.Example):
 		self.runner = runner
 		self.title = "Polygon Decomposition"
 
-		self.polys = [py2d.Math.Polygon() for i in range(10)]
+		self.polys = [Polygon() for i in range(10)]
 		self.active_poly = 0
 	
 		self.decomp = []
@@ -96,7 +96,7 @@ class Decompose(py2d.examples.Main.Example):
 	def mouse_down(self, pos, button):
 		if button == 1:
 
-			self.polys[self.active_poly].add_point(py2d.Math.Vector(pos[0], pos[1]))
+			self.polys[self.active_poly].add_point(Vector(pos[0], pos[1]))
 
 			self.update_decomp()
 
@@ -109,7 +109,7 @@ class Decompose(py2d.examples.Main.Example):
 			def debug_point(p,c,t):
 				self.debug_points.append((p,c,t))
 
-			self.decomp = py2d.Math.Polygon.convex_decompose(self.polys[0], holes, debug_callback=debug_point)
+			self.decomp = Polygon.convex_decompose(self.polys[0], holes, debug_callback=debug_point)
 		else:
 			self.decomp = []
 
@@ -135,7 +135,7 @@ class Offset(py2d.examples.Main.Example):
 	def __init__(self, runner):
 		self.runner = runner
 		self.title = "Polygon Offset"
-		self.poly = py2d.Math.Polygon()
+		self.poly = Polygon()
 		
 		self.update_offset()
 
@@ -212,7 +212,7 @@ class Offset(py2d.examples.Main.Example):
 
 	def mouse_down(self, pos, button):
 		if button == 1:
-			self.poly.add_point([py2d.Math.Vector(pos[0], pos[1])])
+			self.poly.add_point(Vector(pos[0], pos[1]))
 			self.update_offset()
 
 	def update_offset(self):
@@ -223,8 +223,8 @@ class Offset(py2d.examples.Main.Example):
 			return lambda p, c, t: self.debug_points.append((p,color,t))
 
 		if len(self.poly) > 2:
-			self.shrink = py2d.Math.Polygon.offset([self.poly.clone_ccw()], -self.amount, self.tip_decorator, debug_callback=debug_point((255,0,0)))
-			self.grow = py2d.Math.Polygon.offset([self.poly.clone_ccw()], self.amount, self.tip_decorator, debug_callback=debug_point((0,255,0)))
+			self.shrink = Polygon.offset([self.poly.clone_ccw()], -self.amount, self.tip_decorator, debug_callback=debug_point((255,0,0)))
+			self.grow = Polygon.offset([self.poly.clone_ccw()], self.amount, self.tip_decorator, debug_callback=debug_point((0,255,0)))
 		else:
 			self.shrink = []
 			self.grow = []
@@ -259,11 +259,11 @@ class Boolean(py2d.examples.Main.Example):
 		self.title = "Boolean Operations"
 
 
-		#self.poly_a = py2d.Math.Polygon.from_tuples([(0,0), (4,0), (4,4), (0, 4)])
-		#self.poly_b = py2d.Math.Polygon.from_tuples([(2,2), (3,6), (1,6)])
+		#self.poly_a = Polygon.from_tuples([(0,0), (4,0), (4,4), (0, 4)])
+		#self.poly_b = Polygon.from_tuples([(2,2), (3,6), (1,6)])
 
-		self.poly_a = py2d.Math.Polygon()
-		self.poly_b = py2d.Math.Polygon()
+		self.poly_a = Polygon()
+		self.poly_b = Polygon()
 
 		self.active_poly = True
 		self.bool = []
@@ -335,16 +335,16 @@ class Boolean(py2d.examples.Main.Example):
 	def mouse_down(self, pos, button):
 		if button == 1:
 			if self.active_poly:
-				self.poly_a.add_point(py2d.Math.Vector(pos[0], pos[1]))
+				self.poly_a.add_point(Vector(pos[0], pos[1]))
 			else:
-				self.poly_b.add_point(py2d.Math.Vector(pos[0], pos[1]))
+				self.poly_b.add_point(Vector(pos[0], pos[1]))
 
 			self.update_bool()
 
 	def update_bool(self):
 		if len(self.poly_a) > 2 and len(self.poly_b) > 2:
 			try:
-				self.bool = py2d.Math.Polygon.boolean_operation(self.poly_a, self.poly_b, self.mode)
+				self.bool = Polygon.boolean_operation(self.poly_a, self.poly_b, self.mode)
 			except IndexError:
 				self.bool = []
 		else:
