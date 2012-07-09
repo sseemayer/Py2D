@@ -14,6 +14,16 @@ The library is still in very early development, among the features so far are:
 
 To learn more about features and how to get started, check out the [Py2D website](http://sseemayer.github.com/Py2D)!
 
+
+Cython support
+--------------
+Parts of Py2D can now by compiled to C modules using Cython. If you do a setup.py build install, 
+you should get binary versions of the supported modules. Alternatively, for development, you can 
+compile in-place by running
+
+	$ python setup.py build_ext --inplace
+
+
 License (2-clause BSD)
 ----------------------
 
