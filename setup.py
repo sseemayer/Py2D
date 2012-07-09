@@ -8,5 +8,5 @@ setup(	name='py2d',
 	author='Stefan Seemayer',
 	author_email='mail@semicolonsoftware.de',
 
-	packages=['py2d'],
+	packages=['py2d', 'py2d.vecmath'],
 )
