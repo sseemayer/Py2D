@@ -12,29 +12,19 @@ def list_examples(startpath):
 
 	pkgs = [name for _,name,_ in pkgutil.iter_modules([startpath])]
 
+	examples = []
 	for pkg in pkgs:
 		importpath = startpath.replace("/",".") + pkg
 		package = __import__(importpath, globals(), locals(), [importpath], -1)
 
-		for name, obj in inspect.getmembers(package):
-			if inspect.isclass(obj):
-				if issubclass(obj, py2d.examples.Main.Example):
-					desc = obj.__doc__
-					if desc:
-						desc = desc.split("\n")[0]
-					print "%s.%s:\t%s" % (pkg, name, desc)
+		format_doc = lambda d: d.split("\n")[0] if d else ""
 
-def example_from_string(self, example_name):
-	import inspect
+		examples.extend((("%s.%s" % (pkg, name), format_doc(obj.__doc__)) for name, obj in inspect.getmembers(package) \
+		                               if inspect.isclass(obj) \
+					       and issubclass(obj, py2d.examples.Main.Example) \
+					       and name != "Example"))
 
-
-	package_name, class_name = example_name.rsplit('.', 1)
-	package = __import__(package_name, globals(), locals(), [class_name], -1)
-	
-	cls = next((c[1] for c in inspect.getmembers(package, inspect.isclass) if c[0] == class_name))
-
-	return cls(self)
-
+	return examples
 
 
 if __name__ == "__main__":
@@ -52,4 +42,4 @@ if __name__ == "__main__":
 
 	else:
 		print "Please specify an example with the -e option!\nValid options:\n"
-		list_examples("py2d/examples/")
+		print "\n".join( "%s:\t%s" % (a,b) for a,b in list_examples("py2d/examples/"))
