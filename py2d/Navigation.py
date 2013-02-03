@@ -109,17 +109,27 @@ class NavMesh(object):
 				return []
 
 			d = self.get_data(i,j)[1]
+
 			if d == j:
 				return [j]
+
+			elif d == None:
+				return None
+
 			else:
 				return get_path_rec(i,d) + get_path_rec(d,j)
 
 		i = self._polygons.index(start)
 		j = self._polygons.index(stop)
 
-		out = [i] + get_path_rec(i,j)
+		path = get_path_rec(i,j)
 
-		return NavPath(self, [self._polygons[i] for i in out])
+		if path == None:
+			return None
+
+		path = [i] + path
+
+		return NavPath(self, [self._polygons[p] for p in path])
 
 	def get_data(self, i, j):
 		return self._nav_data[i][j]
