@@ -64,7 +64,13 @@ class NavMesh(object):
 		"""
 
 		# initialize with simple distances
-		self._nav_data = [[ (self._polygons[i].neighbors[p][0],j) if p in self._polygons[i].neighbors.keys() else (float('inf'),-1) for j,p in enumerate(self._polygons) ] for i in range(len(self._polygons))]
+		self._nav_data = [
+			[
+				(self._polygons[i].neighbors[p][0], j) if p in self._polygons[i].neighbors.keys() else (float('inf'), None)
+				for j, p in enumerate(self._polygons)
+			]
+			for i in range(len(self._polygons))
+		]
 
 		# floyd-warshall algorithm to compute all-pair shortest paths
 		for k in range(len(self._polygons)):
