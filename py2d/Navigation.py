@@ -15,7 +15,7 @@ class NavMesh(object):
 		"""Create a new navigation mesh"""
 		self._polygons = polygons
 		self.update_nav()
-	
+
 	@staticmethod
 	def generate(boundary, walls=[], distance_function=poly_midpoint_distance):
 		"""Generate a new navigation mesh from a boundary polygon and a list of walls.
@@ -48,7 +48,7 @@ class NavMesh(object):
 		for e, polys in polygon_edges.iteritems():
 			for i, p_a in enumerate(polys):
 				for p_b in polys[i+1:]:
-					
+
 					dist = distance_function(p_a, p_b)
 
 					p_a.neighbors[p_b] = (dist, e)
@@ -59,7 +59,7 @@ class NavMesh(object):
 
 	def update_nav(self):
 		"""Pre-compute navigation data for the navigation mesh.
-		
+
 		This is called automatically upon mesh initialization, but you might want to call it if you have changed the navigation mesh.
 		"""
 
@@ -70,11 +70,11 @@ class NavMesh(object):
 		for k in range(len(self._polygons)):
 			for i in range( len(self._polygons) ):
 				for j in range(len(self._polygons)):
-					
+
 					if k not in (i,j) and i != j:
 						dist  = self.get_data(i,j)[0]
 						dist2 = self.get_data(i,k)[0] + self.get_data(k,j)[0]
-						if dist2 < dist: 
+						if dist2 < dist:
 							self.set_data(i,j, (dist2, k))
 
 	def find_polygon(self, p):
@@ -91,17 +91,21 @@ class NavMesh(object):
 
 		The path returned will be an optimal sequence of NavPolygons leading to the desired target.
 		"""
-		
+
 		if isinstance(start, Math.Vector): start = self.find_polygon(start)
 		if isinstance(stop, Math.Vector): stop = self.find_polygon(stop)
 
 		if not (start and stop): return None
 
 		def get_path_rec(i,j):
+
+			if i == j:
+				return []
+
 			d = self.get_data(i,j)[1]
 			if d == j:
 				return [j]
-			else: 
+			else:
 				return get_path_rec(i,d) + get_path_rec(d,j)
 
 		i = self._polygons.index(start)
@@ -131,18 +135,18 @@ class NavPolygon(Math.Polygon):
 	"""Polygon class with added navigation data"""
 	def __init__(self, polygon):
 		Math.Polygon.__init__(self)
-		
+
 		self.points = polygon.points
 		self.neighbors = {}
 
-	
+
 class NavPath(object):
 	"""Class representing a solved navigation path"""
 	def __init__(self, mesh, polygons):
 		self._mesh = mesh
 		self._polygons = polygons
 
-	
+
 	def get_next_move_to(self, position, final_target):
 		"""Get the next point an agent following this path should move to.
 
@@ -153,31 +157,31 @@ class NavPath(object):
 		@param position: The position of the agent following the path
 		"""
 
-		current_polys = [] 
+		current_polys = []
 		for poly in self._polygons:
 			if poly.contains_point(position):
 				current_polys.append(poly)
 
 		i = max((self._polygons.index(p) for p in current_polys))
-		
+
 		if i == len(self._polygons)-1: return final_target
 
 		edge = self._polygons[i].neighbors[self._polygons[i+1]][1]
-		
+
 		left, right = (edge[0], edge[1]) if Math.point_orientation(position, edge[0], edge[1]) else (edge[1], edge[0])
 
 		for j in range(i+1, len(self._polygons)-1):
 			edge = self._polygons[j].neighbors[self._polygons[j+1]][1]
 			new_left, new_right = (edge[0], edge[1]) if Math.point_orientation(position, edge[0], edge[1]) else (edge[1], edge[0])
-		
+
 			# make the funnel smaller
 			if Math.point_orientation(position, left, new_left): left = new_left
-			if not Math.point_orientation(position, left, right): 
+			if not Math.point_orientation(position, left, right):
 				return right
-			
-			
+
+
 			if not Math.point_orientation(position, right, new_right): right = new_right
-			if not Math.point_orientation(position, left, right): 
+			if not Math.point_orientation(position, left, right):
 				return left
 
 		if Math.point_orientation(position, left, final_target): left = final_target
