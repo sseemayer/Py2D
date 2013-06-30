@@ -1,10 +1,9 @@
 import math
-
 from collections import defaultdict
 
 class Vector(object):
 	"""Class for 2D Vectors.
-	
+
 	Vectors v have an x and y component that can be accessed multiple ways:
 
 		- v.x, v.y
@@ -34,7 +33,7 @@ class Vector(object):
 	def get_length_squared(self):
 		"""Get the squared length of the vector, not calculating the square root for a performance gain"""
 		return self.x * self.x + self.y * self.y;
-	
+
 	def get_slope(self):
 		"""Get the slope of the vector, or float('inf') if x == 0"""
 		if self.x == 0: return float('inf')
@@ -50,7 +49,7 @@ class Vector(object):
 			return self.normalize()
 		else:
 			return self
-	
+
 	def clone(self):
 		"""Return a copy of this vector"""
 		return Vector(self.x, self.y)
@@ -65,7 +64,7 @@ class Vector(object):
 
 	def __add__(self, b):
 		return Vector(self.x + b.x, self.y + b.y)
-	
+
 	def __sub__(self, b):
 		return Vector(self.x - b.x, self.y - b.y)
 
@@ -75,17 +74,17 @@ class Vector(object):
 			return self.x * val.x + self.y * val.y
 		else:
 			return Vector(self.x * val, self.y * val)
-	
-	def __div__(self, val): 
+
+	def __div__(self, val):
 		return Vector(self.x / val, self.y / val)
 
 	def __repr__(self):
 		return "Vector(%.3f, %.3f)" % (self.x, self.y)
-	
+
 	def __eq__(self, other):
 		if not isinstance(other, Vector): return False
 		d = self - other
-		return abs(d.x) < EPSILON and abs(d.y) < EPSILON 
+		return abs(d.x) < EPSILON and abs(d.y) < EPSILON
 
 	def __ne__(self, other):
 		return not self.__eq__(other)

@@ -1,14 +1,13 @@
 import math
 
-from Vector import *
-from Polygon import *
+from py2d.Math.Vector import *
 
 class Transform(object):
 	"""Class for representing affine transformations"""
 
 	def __init__(self, data):
 		self.data = data
-		
+
 	@staticmethod
 	def unit():
 		"""Get a new unit tranformation"""
@@ -54,12 +53,12 @@ class Transform(object):
 		return Transform([[ 1, 0, 0],
 				  [ 0,-1, 0],
 				  [ 0, 0, 1]])
-	
+
 	def __add__(self, b):
 		t = Transform()
 		t.data = [[self.data[x][y] + b.data[x][y] for y in range(3)] for x in range(3)]
 		return t
-	
+
 	def __sub__(self, b):
 		t = Transform()
 		t.data = [[self.data[x][y] - b.data[x][y] for y in range(3)] for x in range(3)]
@@ -71,7 +70,7 @@ class Transform(object):
 
 			x = val.x * self.data[0][0] + val.y * self.data[0][1] + self.data[0][2]
 			y = val.x * self.data[1][0] + val.y * self.data[1][1] + self.data[1][2]
-			
+
 			return Vector(x,y)
 
 		elif isinstance(val, Transform):
@@ -87,7 +86,7 @@ class Transform(object):
 			p_transform = [ self * v for v in val.points ]
 			return Polygon.from_pointlist(p_transform)
 
-		else: 
+		else:
 			raise ValueError("Unknown multiplier: %s" % val)
 
 

@@ -1,12 +1,12 @@
 import math
-
 from collections import defaultdict
-from Vector import *
-from Operations import *
+
+from py2d.Math.Vector import *
+from py2d.Math.Operations import *
 
 def tip_decorator_pointy(a,b,c,d,is_cw):
-	intersection = intersect_line_line(a,b,c,d) 
-	return [intersection] 
+	intersection = intersect_line_line(a,b,c,d)
+	return [intersection]
 
 def tip_decorator_flat(a,b,c,d,is_cw):
 	return []
@@ -14,7 +14,7 @@ def tip_decorator_flat(a,b,c,d,is_cw):
 
 class Polygon(object):
 	"""Class for 2D Polygons.
-	
+
 	A Polgon behaves like a list of points, but the last point in the list is assumed to be connected back to the first point.
 	"""
 
@@ -47,7 +47,7 @@ class Polygon(object):
 	@staticmethod
 	def from_pointlist(points):
 		"""Create a polygon from a list of points
-		
+
 		@type points: List
 		@param points: List of Vectors that make up the polygon
 		"""
@@ -70,7 +70,7 @@ class Polygon(object):
 
 	def add_point(self, point):
 		"""Add a new point at the end of the polygon
-		
+
 		@type point: Vector
 		@param point: The new Vector to add to the polygon
 		"""
@@ -78,7 +78,7 @@ class Polygon(object):
 
 	def add_points(self, points):
 		"""Add multiple new points to the end of the polygon
-		
+
 		@type points: List
 		@param points: A list of Vectors to add
 		"""
@@ -98,9 +98,9 @@ class Polygon(object):
 		def angle_from_origin(p):
 			phi = math.acos(float(p.x) / p.get_length())
 			if p.y < 0: phi = 2 * math.pi - phi
-			return phi 
-	
-	
+			return phi
+
+
 		self.points.sort(key=lambda p: angle_from_origin(p - center))
 
 	def __repr__(self):
@@ -144,11 +144,11 @@ class Polygon(object):
 		"""Perform a boolean operation on two polygons.
 
 		Reference:
-		Avraham Margalit. An Algorithm for Computing the Union, Intersection or Difference of Two Polygons. 
+		Avraham Margalit. An Algorithm for Computing the Union, Intersection or Difference of Two Polygons.
 		Comput & Graphics VoI. 13, No 2, pp 167-183, 1989
 
 		This implementation will only consider island-type polygons, so control tables are replaced by small boolean expressions.
-	
+
 		@type polygon_a: Polygon
 		@param polygon_a: The first polygon
 
@@ -185,11 +185,11 @@ class Polygon(object):
 				v.insert(i, e)
 
 		if operation not in 'uid' or len(operation) > 1: raise ValueError("Operation must be 'u', 'i' or 'd'!")
-	
+
 		# for union and intersection, we want the same orientation on both polygons. for difference, we want different orientation.
 		matching_orientation = polygon_a.is_clockwise() == polygon_b.is_clockwise()
-		if matching_orientation != (operation != 'd'): 
-			
+		if matching_orientation != (operation != 'd'):
+
 			polygon_b = polygon_b.clone()
 			polygon_b.flip()
 
@@ -198,7 +198,7 @@ class Polygon(object):
 		v_b = [(p, polygon_a.contains_point(p)) for p in polygon_b.points]
 
 
-		# find all intersections 
+		# find all intersections
 		intersections_a = defaultdict(list)
 		intersections_b = defaultdict(list)
 		for a1, a2 in zip(v_a, v_a[1:]) + [(v_a[-1], v_a[0])]:
@@ -208,22 +208,22 @@ class Polygon(object):
 					intersections_a[(a1[0],a2[0])].append(i)
 					intersections_b[(b1[0],b2[0])].append(i)
 
-			
-		# extend vector rings by intersections 
+
+		# extend vector rings by intersections
 		for k, v in intersections_a.iteritems():
 			inorder_extend(v_a, k[0], k[1], v)
 
 		for k, v in intersections_b.iteritems():
 			inorder_extend(v_b, k[0], k[1], v)
-		
+
 
 		edge_fragments = defaultdict(list)
-		
+
 		def extend_fragments(v, poly, fragment_type):
 			for v1, v2 in zip(v, v[1:]) + [(v[-1], v[0])]:
 				if v1[1] == fragment_type or v2[1] == fragment_type:
 					# one of the vertices is of the required type
-					edge_fragments[v1[0]].append( v2[0] )		
+					edge_fragments[v1[0]].append( v2[0] )
 
 				elif v1[1] == 2 and v2[1] == 2:
 					# we have two boundary vertices
@@ -234,7 +234,7 @@ class Polygon(object):
 
 		fragment_type_a = 1 if operation == 'i' else 0
 		fragment_type_b = 1 if operation != 'u' else 0
-	
+
 		extend_fragments(v_a, polygon_b, fragment_type_a)
 		extend_fragments(v_b, polygon_a, fragment_type_b)
 
@@ -251,7 +251,7 @@ class Polygon(object):
 			start = edge_fragments.keys()[0]
 			current = edge_fragments[start][0]
 			sequence = [start]
-	
+
 			# follow along the edge fragments sequence
 			while not current in sequence:
 				sequence.append(current)
@@ -264,7 +264,7 @@ class Polygon(object):
 			for c,n in zip(sequence, sequence[1:]) + [(sequence[-1], sequence[0])]:
 				edge_fragments[c].remove(n)
 
-				if not edge_fragments[c]: 
+				if not edge_fragments[c]:
 					del edge_fragments[c]
 
 
@@ -297,7 +297,7 @@ class Polygon(object):
 
 		@type polygon_b: Polygon
 		@param polygon_b: The second polygon
-		
+
 		@return: A list of fragment polygons
 		"""
 		return Polygon.boolean_operation(polygon_a, polygon_b, 'u')
@@ -311,7 +311,7 @@ class Polygon(object):
 
 		@type polygon_b: Polygon
 		@param polygon_b: The second polygon
-		
+
 		@return: A list of fragment polygons
 		"""
 		return Polygon.boolean_operation(polygon_a, polygon_b, 'i')
@@ -325,12 +325,12 @@ class Polygon(object):
 
 		@type polygon_b: Polygon
 		@param polygon_b: The second polygon
-		
+
 		@return: A list of fragment polygons
 		"""
 		return Polygon.boolean_operation(polygon_a, polygon_b, 'd')
-	
-	
+
+
 	@staticmethod
 	def offset(polys, amount, tip_decorator=tip_decorator_pointy, debug_callback=None):
 		"""Shrink or grow a polygon by a given amount.
@@ -357,13 +357,13 @@ class Polygon(object):
 
 		def offset_poly(poly):
 			r = []
-			for i in range(len(poly.points)): 
+			for i in range(len(poly.points)):
 				c, n, n2 = poly.points[i], poly.points[ (i+1) % len(poly) ], poly.points[ (i+2) % len(poly) ]
-				is_convex = point_orientation(c,n,n2) 
+				is_convex = point_orientation(c,n,n2)
 
 				unit_normal = (n - c).normal().normalize()
 				unit_normal2 = (n2 - n).normal().normalize()
-				
+
 				c_prime = c + unit_normal * amount
 				n_prime = n + unit_normal * amount
 				n2_prime = n2 + unit_normal2 * amount
@@ -372,12 +372,12 @@ class Polygon(object):
 				r.append(c_prime)
 				r.append(n_prime)
 
-				if is_convex == (amount > 0): 
+				if is_convex == (amount > 0):
 					r.append(n)
-				else: 
+				else:
 					r.extend(tip_decorator(c_prime, n_prime, n_prime2, n2_prime, True))
 
-	
+
 			return r
 
 
@@ -432,7 +432,7 @@ class Polygon(object):
 			# build a list of loops
 			out = []
 			while pts:
-				
+
 				# build up a list of seen points until we re-visit one - a loop!
 				seen = []
 				for p in pts + [pts[0]]:
@@ -469,7 +469,7 @@ class Polygon(object):
 						i = intersect_lineseg_ray(a,b,p,p+VECTOR_X)
 						if i and i.x > p.x:
 							wn += 1
-			return wn	
+			return wn
 
 
 		def find_point_in_poly(pts):
@@ -477,7 +477,7 @@ class Polygon(object):
 
 			if len(pts) == 3: return (pts[0] + pts[1] + pts[2]) / 3
 
-			
+
 			# find convex point v
 			v = None
 			for i in range(len(pts)):
@@ -491,20 +491,20 @@ class Polygon(object):
 				dbg(v, 0x000000, "V")
 				dbg(a, 0x000000, "A")
 				dbg(b, 0x000000, "B")
-					
+
 				for q in q_s:
 					dbg(q, 0x000000, "Q")
 
 			if q_s:
 				# return the midpoint of the shortest diagonal qv
-				q = min(q_s, key=lambda q: (q-v).length_squared ) 
+				q = min(q_s, key=lambda q: (q-v).length_squared )
 
 
 				return (q - v) / 2.0 + v
 			else:
 				# no diagonal from v, return midpoint of ab instead
 				return (b - a) / 2.0 + a
-	
+
 
 
 		def dbg(p, color, text):
@@ -517,23 +517,23 @@ class Polygon(object):
 
 			offset = offset_poly(poly)
 			decomp = decompose( offset )
-			
+
 			raw.extend( decomp )
 
 
 		#print "\n-----------------\n"
 		output = []
 		for poly in raw:
-		
+
 			poly = Polygon.simplify_sequence(poly)
 			p = find_point_in_poly( poly )
-			wn = winding_number(p, raw) 
+			wn = winding_number(p, raw)
 
-			
+
 			dbg(p, 0xffff00, "%d %d" % (wn, len(poly)))
 			#print "%d %d" % (wn, len(poly))
 
-			# shrink: include poly in solution only if winding number of that region is greater than 1			
+			# shrink: include poly in solution only if winding number of that region is greater than 1
 			# grow: include only if winding number is 1
 			if False or (amount < 0 and wn > 0) or (amount > 0 and wn == 1):
 				output.append(Polygon.from_pointlist(poly))
@@ -555,7 +555,7 @@ class Polygon(object):
 		@param polygon: The possibly concave polygon to decompose.
 
 		@type holes: List
-		@param holes: A list of polygons inside of polygon to be considered as holes 
+		@param holes: A list of polygons inside of polygon to be considered as holes
 		"""
 
 		def dbg(p, c, t):
@@ -572,14 +572,14 @@ class Polygon(object):
 		class G: pass
 		g = G()
 		g.del_index = 0
-		
+
 		def check_decomp(l, p_minus_l, p):
 			"""check the decomposition l of polygon p"""
 			l_v = [p[v] for v in l]
-			
-			xes = [v.x for v in l_v] 
+
+			xes = [v.x for v in l_v]
 			x_min,x_max = min(xes), max(xes)
-			
+
 			yes = [v.y for v in l_v]
 			y_min,y_max = min(yes), max(yes)
 
@@ -635,7 +635,7 @@ class Polygon(object):
 								d_a = i
 								closest_hole = hole
 
-			if closest_hole: 
+			if closest_hole:
 				absorb_hole(d_b, closest_hole, d_a)
 				return False
 			else:
@@ -643,7 +643,7 @@ class Polygon(object):
 
 		def handle_holes_convex():
 			d_b = p[0]
-			
+
 			closest_intersection = None
 			for hole in holes:
 				i = min(hole, key=lambda v: (v-d_b).length_squared)
@@ -659,7 +659,7 @@ class Polygon(object):
 
 			holes.remove(closest_hole)
 			if Polygon.is_clockwise_s(closest_hole): closest_hole = closest_hole.clone_ccw()
-			
+
 			i = closest_hole.points.index(d_a)
 			j = p.index(d_b)
 
@@ -685,14 +685,14 @@ class Polygon(object):
 			l = range(i_start,i_extend+1) if i_start < i_extend else range(i_start,len(p)) + range(0,i_extend+1)
 
 			#print "l=%s" % l
-			
+
 			# remove elements from the end of l until we have a valid decomposition
 			p_minus_l = [k for k in range(len(p)) if k not in l]
 			while len(l) > 2 and not check_decomp(l, p_minus_l, p):
 				l_pop = l.pop()
 				p_minus_l.insert(0, l_pop)
 
-			#print "l'=%s" % l 
+			#print "l'=%s" % l
 
 			# try to extend l counter-clockwise - find next notch
 			i_extend2 = next( ( i for i in range(i_start,-1,-1) + range(len(p)-1,i_start, -1) if not point_orientation( p[i-1], p[i], p[(i+1) % len(p)] ) ) )
@@ -702,21 +702,21 @@ class Polygon(object):
 			#print "l2=%s" % l2
 
 			l = l2 + l
-			
+
 			# remove elements from the start of l until we have a valid decomposition
 			p_minus_l = [k for k in range(len(p)) if k not in l]
 			while len(l) > 2 and not check_decomp(l, p_minus_l, p):
 				p_minus_l.append(l[0])
 				del l[0]
 
-			
+
 			#print "l*=%s" % l
-			
+
 			#print "i_start=%d, i_extend=%d, i_extend2=%d" % (i_start, i_extend, i_extend2)
 
 			# do we still have enough points for a convex poly? if not, give up for this starting point
 			if len(l) <= 2: return False
-			
+
 			# we now have a diagonal l[0] , l[-1] creating the convex poly l
 
 
@@ -725,9 +725,9 @@ class Polygon(object):
 
 			# we didn't cross or contain any holes, make a poly and remove extaneous points
 			#print "poly! %s" % l
-			
+
 			out.append(Polygon.from_pointlist([p[k] for k in l]))
-			for v in sorted(l[1:-1], reverse=True): 
+			for v in sorted(l[1:-1], reverse=True):
 				dbg(p[v], (255,0,255), "del %d" % g.del_index)
 				g.del_index += 1
 				del p[v]
@@ -742,8 +742,8 @@ class Polygon(object):
 		while len(p) > 3 and not Polygon.is_convex_s(p):
 			if not try_decompose(i):
 				i+= 1
-			
-			if Polygon.is_convex_s(p) and holes: handle_holes_convex()			
+
+			if Polygon.is_convex_s(p) and holes: handle_holes_convex()
 
 			#print "......"
 
@@ -780,7 +780,7 @@ class Polygon(object):
 	def is_clockwise_s(pts):
 		# get index of point with minimal x value
 		i_min = min(xrange(len(pts)), key=lambda i: pts[i].x)
-	
+
 		# get previous, current and next points
 		a = pts[i_min-1]
 		b = pts[i_min]
@@ -792,7 +792,7 @@ class Polygon(object):
 	def is_convex(self):
 		"""Determines whether the polygon is convex."""
 		return Polygon.is_convex_s(self.points)
-	
+
 	@staticmethod
 	def is_convex_s(poly_points):
 		"""Determines whether a sequence of points forms a convex polygon."""
@@ -801,7 +801,7 @@ class Polygon(object):
 
 		for i in range(1,len(poly_points)):
 			p, c, n = poly_points[i-1], poly_points[i], poly_points[(i+1) % len(poly_points)]
-			
+
 			if point_orientation(p,c,n) != ori:
 				return False
 
@@ -815,7 +815,7 @@ class Polygon(object):
 
 	def contains_point(self, p):
 		"""Checks if p is contained in the polygon, or on the boundary.
-		
+
 		@return: 0 if outside, 1 if in the polygon, 2 if on the boundary.
 		"""
 		return Polygon.contains_point_s(self.points, p)
