@@ -3,13 +3,14 @@ from pygame.locals import *
 
 from py2d.Bezier import *
 from py2d.Math import *
-import py2d.examples.Main
 
 SELECTION_DISTANCE = 20
 
-class Cubic(py2d.examples.Main.Example):
+from examples import Example
+
+class Cubic(Example):
 	"""Cubic Bezier curve sample
-	
+
 	Draw around end and control points of the bezier curve.
 
 	Key mappings:
@@ -39,7 +40,7 @@ class Cubic(py2d.examples.Main.Example):
 		pass
 
 	def render(self):
-	
+
 		pygame.draw.line(self.runner.screen, 0x006600, self.p1.as_tuple(), self.c1.as_tuple())
 		pygame.draw.line(self.runner.screen, 0x006600, self.p2.as_tuple(), self.c2.as_tuple())
 
@@ -74,9 +75,9 @@ class Cubic(py2d.examples.Main.Example):
 			self.sel_point.x, self.sel_point.y = pos
 
 
-class Quadratic(py2d.examples.Main.Example):
+class Quadratic(Example):
 	"""Quadratic Bezier curve sample
-	
+
 	Draw around end and control points of the bezier curve.
 
 	Key mappings:
@@ -104,7 +105,7 @@ class Quadratic(py2d.examples.Main.Example):
 		pass
 
 	def render(self):
-	
+
 		pygame.draw.line(self.runner.screen, 0x006600, self.p1.as_tuple(), self.c.as_tuple())
 		pygame.draw.line(self.runner.screen, 0x006600, self.p2.as_tuple(), self.c.as_tuple())
 

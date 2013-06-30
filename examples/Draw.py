@@ -2,11 +2,11 @@ import pygame
 from pygame.locals import *
 
 from py2d.Math import *
-import py2d.examples.Main
+from examples import Example
 
-class Draw(py2d.examples.Main.Example):
+class Draw(Example):
 	"""Polygon Drawing Sample
-	
+
 	Draw a polygon outline with the mouse.
 
 	Key mappings:
@@ -29,7 +29,7 @@ class Draw(py2d.examples.Main.Example):
 			self.runner.keys[K_BACKSPACE] = False
 
 	def render(self):
-		
+
 		if len(self.poly) > 1:
 			pygame.draw.lines(self.runner.screen, 0xff0000, True, self.poly.as_tuple_list())
 		elif self.poly.points:

@@ -50,15 +50,15 @@ class ExampleRunner(object):
 
 			self.update(time_elapsed)
 			self.render()
-			
+
 			pygame.display.update()
 
 	def update(self, time_elapsed):
 
 		for event in pygame.event.get():
 			if event.type in (KEYDOWN, KEYUP):
-				
-				if event.key == K_ESCAPE: 
+
+				if event.key == K_ESCAPE:
 					self.running = False
 					return
 
@@ -67,13 +67,13 @@ class ExampleRunner(object):
 
 				if not self.show_help:
 					self.keys[event.key] = (event.type == KEYDOWN)
-				
+
 			elif event.type == QUIT:
 				self.running = False
 
 			elif event.type == MOUSEBUTTONUP and not self.show_help:
 				if self._example: self._example.mouse_up(event.pos, event.button)
-			
+
 			elif event.type == MOUSEBUTTONDOWN and not self.show_help:
 				if self._example: self._example.mouse_down(event.pos, event.button)
 
@@ -90,7 +90,7 @@ class ExampleRunner(object):
 			self.screen.fill(TEXT_BACKGROUND)
 			if self._example:
 				for l, line in enumerate([s.replace("\t","") for s in self._example.__doc__.split("\n")]):
-					surf = self.font.render(line, True, TEXT_COLOR, TEXT_BACKGROUND) 
+					surf = self.font.render(line, True, TEXT_COLOR, TEXT_BACKGROUND)
 					self.screen.blit(surf, (10, 15 * l + 10) )
 
 		else:
@@ -107,7 +107,7 @@ class ExampleRunner(object):
 
 		package_name, class_name = example_name.rsplit('.', 1)
 		package = __import__(package_name, globals(), locals(), [class_name], -1)
-		
+
 		cls = next((c[1] for c in inspect.getmembers(package, inspect.isclass) if c[0] == class_name))
 
 		return cls(self)
@@ -115,7 +115,7 @@ class ExampleRunner(object):
 class Example(object):
 
 	def update(self, time_elapsed): pass
-	
+
 	def render(self): pass
 
 	def mouse_move(self, pos, rel, buttons): pass
@@ -124,7 +124,6 @@ class Example(object):
 
 	def mouse_up(self, pos, button): pass
 
-
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 
@@ -132,3 +131,13 @@ BACKGROUND_COLOR = 0x000033
 
 TEXT_BACKGROUND = (16, 16, 16)
 TEXT_COLOR = (255,255,255)
+
+import examples.Bezier
+import examples.Draw
+import examples.FOV
+import examples.Logo
+import examples.Math
+import examples.Navigation
+import examples.Pymunk
+import examples.SVG
+

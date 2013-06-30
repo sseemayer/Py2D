@@ -4,9 +4,9 @@ from pygame.locals import *
 from py2d.Math import *
 from py2d.SVG import convert_svg
 
-import py2d.examples.Main
+from examples import Example
 
-class SVGConverter(py2d.examples.Main.Example):
+class SVGConverter(Example):
 	"""SVG Converter Sample
 
 	Polygons are imported from an SVG file created in Inkscape.
@@ -19,7 +19,7 @@ class SVGConverter(py2d.examples.Main.Example):
 
 		self.polys = []
 
-		for id, polys in convert_svg("py2d/examples/shapes.svg", bezier_max_divisions = None).iteritems():
+		for id, polys in convert_svg("examples/shapes.svg", bezier_max_divisions = None).iteritems():
 			self.polys.append(polys)
 
 		self.decomp = []
@@ -39,7 +39,7 @@ class SVGConverter(py2d.examples.Main.Example):
 		if len(poly) > 1:
 			if fill and len(poly) > 2:
 				pygame.draw.polygon(self.runner.screen, color, poly.as_tuple_list())
-			
+
 			pygame.draw.lines(self.runner.screen, color, True, poly.as_tuple_list())
 		elif poly.points:
 			pygame.draw.circle(self.runner.screen, color, poly.points[0].as_tuple(), 2)
