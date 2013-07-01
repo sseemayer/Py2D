@@ -13,9 +13,9 @@ from py2d.Math import Polygon, Vector, Transform
 from py2d.Bezier import flatten_cubic_bezier, flatten_quadratic_bezier
 
 def convert_svg(f, transform=Transform.unit(), bezier_max_divisions=None, bezier_max_flatness=0.1):
-	"""Convert an SVG file to a hash of Py2D Polygons. 
+	"""Convert an SVG file to a hash of Py2D Polygons.
 
-	The hash keys will be the ids set to the corresponding <path> elements in the SVG file. 
+	The hash keys will be the ids set to the corresponding <path> elements in the SVG file.
 	The hash value is a list of polygons, the first one being the outline polygon and all additional polygons being holes.
 
 	@param f: File object or file name to a SVG file.
@@ -75,7 +75,7 @@ def convert_svg(f, transform=Transform.unit(), bezier_max_divisions=None, bezier
 			while tokens:
 				# find the next token that is a command
 				par_index = next( i for i,v in enumerate(tokens[1:] + ["E"]) if re.match('^[a-zA-Z]$', v) ) + 1
-			
+
 				# first token should always be the command, rest the parameters
 				cmd = tokens[0]
 				pars = tokens[1:par_index]
@@ -111,7 +111,7 @@ def convert_svg(f, transform=Transform.unit(), bezier_max_divisions=None, bezier
 
 			elif cmd == "c" or cmd == "C":
 				# create cubic polybezier
-				
+
 				for i in range(0, len(pars), 3):
 					c1, c2, b = parse_vec(pars[i]), parse_vec(pars[i+1]), parse_vec(pars[i+2])
 
@@ -149,17 +149,17 @@ def convert_svg(f, transform=Transform.unit(), bezier_max_divisions=None, bezier
 
 			elif cmd == "z":
 				# close line by only moving relative_pos to first vertex
-				
+
 				polys.append(transform * Polygon.from_pointlist(verts))
 				relative_pos = verts[0]
 				verts = []
-				
+
 
 			else:
 				warnings.warn("Unrecognized SVG path command: %s - path skipped" % cmd)
 				polys = []
 				break
-	
+
 		if verts:
 			polys.append(transform * Polygon.from_pointlist(verts))
 		#print "----"
@@ -174,4 +174,4 @@ def convert_svg(f, transform=Transform.unit(), bezier_max_divisions=None, bezier
 	return out
 
 if __name__ == "__main__":
-	print convert_svg("py2d/examples/shapes.svg")
+	print(convert_svg("py2d/examples/shapes.svg"))

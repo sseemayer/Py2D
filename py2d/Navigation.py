@@ -1,6 +1,7 @@
 """Navigation Mesh generation and navigation."""
 
-import Math
+import itertools
+import py2d.Math
 
 from collections import defaultdict
 
@@ -32,7 +33,7 @@ class NavMesh(object):
 		@param distance_function: Function of the type f(p_a, p_b) that returns the distance between polygon objects p_a and p_b according to some metric.
 		"""
 
-		convex_decomp = Math.Polygon.convex_decompose(boundary, walls)
+		convex_decomp = py2d.Math.Polygon.convex_decompose(boundary, walls)
 
 		# make NavPolygons out of the convex decomposition polygons
 		polygons = [NavPolygon(poly) for poly in convex_decomp]
@@ -40,12 +41,12 @@ class NavMesh(object):
 		# create dict of shared edges
 		polygon_edges = defaultdict(list)
 		for poly in polygons:
-			for a,b in zip(poly, poly[1:]) + [(poly[-1],poly[0])]:
+			for a,b in itertools.chain(zip(poly, poly[1:]), [(poly[-1],poly[0])]):
 				c,d = (a,b) if a.x < b.x or (a.x == b.x and a.y < b.y ) else (b,a)
 				polygon_edges[(c,d)].append(poly)
 
 		# link polys that share edges
-		for e, polys in polygon_edges.iteritems():
+		for e, polys in polygon_edges.items():
 			for i, p_a in enumerate(polys):
 				for p_b in polys[i+1:]:
 
@@ -66,10 +67,10 @@ class NavMesh(object):
 		# initialize with simple distances
 		self._nav_data = [
 			[
-				(self._polygons[i].neighbors[p][0], j) if p in self._polygons[i].neighbors.keys() else (float('inf'), None)
+				(q.neighbors[p][0], j) if p in q.neighbors.keys() else (float('inf'), None)
 				for j, p in enumerate(self._polygons)
 			]
-			for i in range(len(self._polygons))
+			for i, q in enumerate(self._polygons)
 		]
 
 		# floyd-warshall algorithm to compute all-pair shortest paths
@@ -98,8 +99,8 @@ class NavMesh(object):
 		The path returned will be an optimal sequence of NavPolygons leading to the desired target.
 		"""
 
-		if isinstance(start, Math.Vector): start = self.find_polygon(start)
-		if isinstance(stop, Math.Vector): stop = self.find_polygon(stop)
+		if isinstance(start, py2d.Math.Vector): start = self.find_polygon(start)
+		if isinstance(stop, py2d.Math.Vector): stop = self.find_polygon(stop)
 
 		if not (start and stop): return None
 
@@ -147,10 +148,10 @@ class NavMesh(object):
 	nodes = property(get_nodes)
 
 
-class NavPolygon(Math.Polygon):
+class NavPolygon(py2d.Math.Polygon):
 	"""Polygon class with added navigation data"""
 	def __init__(self, polygon):
-		Math.Polygon.__init__(self)
+		py2d.Math.Polygon.__init__(self)
 
 		self.points = polygon.points
 		self.neighbors = {}
@@ -184,28 +185,28 @@ class NavPath(object):
 
 		edge = self._polygons[i].neighbors[self._polygons[i+1]][1]
 
-		left, right = (edge[0], edge[1]) if Math.point_orientation(position, edge[0], edge[1]) else (edge[1], edge[0])
+		left, right = (edge[0], edge[1]) if py2d.Math.point_orientation(position, edge[0], edge[1]) else (edge[1], edge[0])
 
 		for j in range(i+1, len(self._polygons)-1):
 			edge = self._polygons[j].neighbors[self._polygons[j+1]][1]
-			new_left, new_right = (edge[0], edge[1]) if Math.point_orientation(position, edge[0], edge[1]) else (edge[1], edge[0])
+			new_left, new_right = (edge[0], edge[1]) if py2d.Math.point_orientation(position, edge[0], edge[1]) else (edge[1], edge[0])
 
 			# make the funnel smaller
-			if Math.point_orientation(position, left, new_left): left = new_left
-			if not Math.point_orientation(position, left, right):
+			if py2d.Math.point_orientation(position, left, new_left): left = new_left
+			if not py2d.Math.point_orientation(position, left, right):
 				return right
 
 
-			if not Math.point_orientation(position, right, new_right): right = new_right
-			if not Math.point_orientation(position, left, right):
+			if not py2d.Math.point_orientation(position, right, new_right): right = new_right
+			if not py2d.Math.point_orientation(position, left, right):
 				return left
 
-		if Math.point_orientation(position, left, final_target): left = final_target
-		if not Math.point_orientation(position, left, right):
+		if py2d.Math.point_orientation(position, left, final_target): left = final_target
+		if not py2d.Math.point_orientation(position, left, right):
 			return right
 
-		if not Math.point_orientation(position, right, final_target): right = final_target
-		if not Math.point_orientation(position, left, right):
+		if not py2d.Math.point_orientation(position, right, final_target): right = final_target
+		if not py2d.Math.point_orientation(position, left, right):
 			return left
 
 		return final_target

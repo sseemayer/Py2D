@@ -1,19 +1,19 @@
 """Calculation of polygonal Field of View (FOV)"""
-
-import Math
+import functools
+import py2d.Math
 
 class Vision:
 	"""Class for representing a polygonal field of vision (FOV).
-	
-	It requires a list of obstructors, given as line strips made of lists of vectors (i.e. we have a list of lists of vectors).
-	The vision polygon will be cached as long as the eye position and obstructors don't change. 
 
-		>>> obs = [[ Math.Vector(2,4), Math.Vector(4, 1), Math.Vector(7, -2) ],
-		...        [ Math.Vector(1,-2), Math.Vector(6, -3) ],
-		...	   [ Math.Vector(2.5,5), Math.Vector(3, 4) ]]
+	It requires a list of obstructors, given as line strips made of lists of vectors (i.e. we have a list of lists of vectors).
+	The vision polygon will be cached as long as the eye position and obstructors don't change.
+
+		>>> obs = [[ py2d.Math.Vector(2,4), py2d.Math.Vector(4, 1), py2d.Math.Vector(7, -2) ],
+		...        [ py2d.py2d.Math.Vector(1,-2), py2d.Math.Vector(6, -3) ],
+		...	   [ py2d.Math.Vector(2.5,5), py2d.Math.Vector(3, 4) ]]
 		>>> radius = 20
-		>>> eye = Math.Vector(0,0)
-		>>> boundary = Math.Polygon.regular(eye, radius, 4)
+		>>> eye = py2d.Math.Vector(0,0)
+		>>> boundary = py2d.Math.Polygon.regular(eye, radius, 4)
 		>>> v = Vision(obs)
 		>>> poly = v.get_vision(eye, radius, boundary)
 		>>> poly.points[0:6]
@@ -36,20 +36,20 @@ class Vision:
 
 	def set_obstructors(self, obstructors):
 		"""Set new obstructor data for the Vision object.
-	
+
 		This will also cause the vision polygon to become invalidated, resulting in a re-calculation the next time you access it.
 
 		@type obstructors: list
 		@param obstructors: A list of obstructors. Obstructors are a list of vectors, so this should be a list of lists.
 		"""
 		def flatten_list(l):
-			return reduce(lambda x,y: x+y, l)
+			return functools.reduce(lambda x,y: x+y, l)
 
 		# concatenate list of lists of vectors to a list of vectors
-		self.obs_points = flatten_list(obstructors)			
-		
+		self.obs_points = flatten_list(obstructors)
+
 		# convert obstructor line strips to lists of line segments
-		self.obs_segs = flatten_list([ zip(strip, strip[1:]) for strip in obstructors ])
+		self.obs_segs = flatten_list([ list(zip(strip, strip[1:])) for strip in obstructors ])
 
 		self.cached_vision = None
 		self.cached_position = None
@@ -57,7 +57,7 @@ class Vision:
 
 	def get_vision(self, eye, radius, boundary):
 		"""Get a vision polygon for a given eye position and boundary Polygon.
-		
+
 		@type eye: Vector
 		@param eye: The position of the viewer (normally the center of the boundary polygon)
 		@type radius: float
@@ -75,8 +75,8 @@ class Vision:
 	def calculate(self, eye, radius, boundary):
 		"""Re-calculate the vision polygon.
 
-		WARNING: You should only call this if you want to re-calculate the vision polygon for some reason. 
-		
+		WARNING: You should only call this if you want to re-calculate the vision polygon for some reason.
+
 		For normal usage, use L{get_vision} instead!
 		"""
 
@@ -87,13 +87,13 @@ class Vision:
 
 		radius_squared = radius * radius
 
-		
+
 		closest_points = lambda points, reference: sorted(points, key=lambda p: (p - reference).get_length_squared())
 
 
 		def sub_segment(small, big):
-			return Math.distance_point_lineseg_squared(small[0], big[0], big[1]) < 0.0001 and Math.distance_point_lineseg_squared(small[1], big[0], big[1]) < 0.0001
-				
+			return py2d.Math.distance_point_lineseg_squared(small[0], big[0], big[1]) < 0.0001 and py2d.Math.distance_point_lineseg_squared(small[1], big[0], big[1]) < 0.0001
+
 
 		def segment_in_obs(seg):
 			for line_segment in self.obs_segs:
@@ -106,17 +106,17 @@ class Vision:
 
 			if p not in bpoints:
 				if (eye - p).get_length_squared() > radius_squared: return False
-				if not boundary.contains_point(p): return False 
-			
+				if not boundary.contains_point(p): return False
+
 			for line_segment in obs_segs:
-				if Math.check_intersect_lineseg_lineseg( eye, p, line_segment[0], line_segment[1]): 
+				if py2d.Math.check_intersect_lineseg_lineseg( eye, p, line_segment[0], line_segment[1]):
 					if line_segment[0] != p and line_segment[1] != p:
 						return False
 
 			return True
 
 		def lineseg_in_radius(seg):
-			return Math.distance_point_lineseg_squared(eye, seg[0], seg[1]) <= radius_squared
+			return py2d.Math.distance_point_lineseg_squared(eye, seg[0], seg[1]) <= radius_squared
 
 		obs_segs = filter(lineseg_in_radius, self.obs_segs)
 
@@ -124,26 +124,26 @@ class Vision:
 		visible_points = list(filter(check_visibility, set(self.obs_points + boundary.points )))
 
 		# find all obstructors intersecting the vision polygon
-		boundary_intersection_points = Math.intersect_linesegs_linesegs(obs_segs, zip(boundary.points, boundary.points[1:]) + [(boundary.points[-1], boundary.points[0])])
-		
+		boundary_intersection_points = py2d.Math.intersect_linesegs_linesegs(obs_segs, list(zip(boundary.points, boundary.points[1:])) + [(boundary.points[-1], boundary.points[0])])
+
 		if self.debug: self.debug_points.extend([(p, 0xFF0000) for p in visible_points])
 		if self.debug: self.debug_points.extend([(p, 0x00FFFF) for p in boundary_intersection_points])
 
-		# filter boundary_intersection_points to only include visible points 
+		# filter boundary_intersection_points to only include visible points
 		# - need extra code here to handle points on obstructors!
-		for line_segment in obs_segs:		
+		for line_segment in obs_segs:
 			i = 0
 			while i < len(boundary_intersection_points):
 				p = boundary_intersection_points[i]
-				
-				if Math.distance_point_lineseg_squared(p, line_segment[0], line_segment[1]) > 0.0001 and Math.check_intersect_lineseg_lineseg(eye, p, line_segment[0], line_segment[1]):
+
+				if py2d.Math.distance_point_lineseg_squared(p, line_segment[0], line_segment[1]) > 0.0001 and py2d.Math.check_intersect_lineseg_lineseg(eye, p, line_segment[0], line_segment[1]):
 					boundary_intersection_points.remove(p)
 				else:
 					i+=1
 
 		visible_points += boundary_intersection_points
 
-		poly = Math.Polygon()
+		poly = py2d.Math.Polygon()
 		poly.add_points(visible_points)
 		poly.sort_around(eye)
 
@@ -154,7 +154,7 @@ class Vision:
 			n = poly.points[ (i+1) % len(poly.points) ]
 
 			# intersect visible point with obstructors and boundary polygon
-			intersections = set(Math.intersect_linesegs_ray(obs_segs, eye, c) + Math.intersect_poly_ray(boundary.points, eye, c))
+			intersections = set(py2d.Math.intersect_linesegs_ray(obs_segs, eye, c) + py2d.Math.intersect_poly_ray(boundary.points, eye, c))
 
 			intersections = [ip for ip in intersections if ip != c and boundary.contains_point(ip)]
 
@@ -185,7 +185,7 @@ class Vision:
 						i-=1
 
 				elif sio_pc and not sio_cn:
-					
+
 					#if self.debug: print "insert %s at %d (+)" % (closest_intersection, i+1)
 					poly.points.insert(i+1, intersection)
 					i+=1

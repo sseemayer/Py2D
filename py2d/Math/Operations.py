@@ -29,7 +29,7 @@ def intersect_poly_lineseg(poly_points, p1, p2):
 
 	@return: The list of intersection points or an empty list
 	"""
-	return intersect_linesegs_lineseg(zip(poly_points[0:], poly_points[1:]) + [(poly_points[-1], poly_points[0])], p1, p2)
+	return intersect_linesegs_lineseg(list(zip(poly_points[0:], poly_points[1:])) + [(poly_points[-1], poly_points[0])], p1, p2)
 
 def intersect_poly_ray(poly_points, p1, p2):
 	"""Intersect a polygon and a ray
@@ -45,7 +45,7 @@ def intersect_poly_ray(poly_points, p1, p2):
 
 	@return: The list of intersection points or an empty list
 	"""
-	return intersect_linesegs_ray(zip(poly_points[0:], poly_points[1:]) + [(poly_points[-1], poly_points[0])], p1, p2)
+	return intersect_linesegs_ray(list(zip(poly_points[0:], poly_points[1:])) + [(poly_points[-1], poly_points[0])], p1, p2)
 
 def intersect_line_line(p1, p2, q1, q2):
 	"""Intersect two lines
@@ -181,7 +181,7 @@ def intersect_poly_poly(poly_points1, poly_points2):
 	@return: The list of intersections or an empty list
 	"""
 
-	return intersect_linesegs_linesegs(zip(poly_points1[0:], poly_points1[1:]) + [(poly_points1[-1], poly_points1[0])], zip(poly_points2[0:], poly_points2[1:]) + [(poly_points2[-1], poly_points2[0])])
+	return intersect_linesegs_linesegs(list(zip(poly_points1[0:], poly_points1[1:])) + [(poly_points1[-1], poly_points1[0])], list(zip(poly_points2[0:], poly_points2[1:])) + [(poly_points2[-1], poly_points2[0])])
 
 def intersect_linesegs_linesegs(segs1, segs2):
 	"""Intersect two lists of line segments

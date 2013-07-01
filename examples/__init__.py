@@ -106,7 +106,7 @@ class ExampleRunner(object):
 
 
 		package_name, class_name = example_name.rsplit('.', 1)
-		package = __import__(package_name, globals(), locals(), [class_name], -1)
+		package = __import__(package_name, globals(), locals(), [class_name], 1)
 
 		cls = next((c[1] for c in inspect.getmembers(package, inspect.isclass) if c[0] == class_name))
 

@@ -1,4 +1,5 @@
 import math
+import itertools
 from collections import defaultdict
 
 from py2d.Math.Vector import *
@@ -201,8 +202,8 @@ class Polygon(object):
 		# find all intersections
 		intersections_a = defaultdict(list)
 		intersections_b = defaultdict(list)
-		for a1, a2 in zip(v_a, v_a[1:]) + [(v_a[-1], v_a[0])]:
-			for b1, b2 in zip(v_b, v_b[1:]) + [(v_b[-1], v_b[0])]:
+		for a1, a2 in list(zip(v_a, v_a[1:])) + [(v_a[-1], v_a[0])]:
+			for b1, b2 in list(zip(v_b, v_b[1:])) + [(v_b[-1], v_b[0])]:
 				i = intersect_lineseg_lineseg(a1[0],a2[0],b1[0],b2[0])
 				if i:
 					intersections_a[(a1[0],a2[0])].append(i)
@@ -220,7 +221,7 @@ class Polygon(object):
 		edge_fragments = defaultdict(list)
 
 		def extend_fragments(v, poly, fragment_type):
-			for v1, v2 in zip(v, v[1:]) + [(v[-1], v[0])]:
+			for v1, v2 in list(zip(v, v[1:])) + [(v[-1], v[0])]:
 				if v1[1] == fragment_type or v2[1] == fragment_type:
 					# one of the vertices is of the required type
 					edge_fragments[v1[0]].append( v2[0] )
@@ -241,7 +242,7 @@ class Polygon(object):
 		def print_edge():
 			for k in edge_fragments.keys():
 				for v in edge_fragments[k]:
-					print "%s -> %s" % (k, v)
+					print("%s -> %s" % (k, v))
 
 
 
@@ -261,7 +262,7 @@ class Polygon(object):
 			# get only the cyclic part of the sequence
 			sequence = sequence[sequence.index(current):]
 
-			for c,n in zip(sequence, sequence[1:]) + [(sequence[-1], sequence[0])]:
+			for c,n in list(zip(sequence, sequence[1:])) + [(sequence[-1], sequence[0])]:
 				edge_fragments[c].remove(n)
 
 				if not edge_fragments[c]:
@@ -459,7 +460,7 @@ class Polygon(object):
 
 			wn = 0
 			for pp in raw:
-				for a,b in zip(pp, pp[1:]) + [(pp[-1], pp[0])]:
+				for a,b in list(zip(pp, pp[1:])) + [(pp[-1], pp[0])]:
 					if a.y < p.y and b.y > p.y:
 						i = intersect_lineseg_ray(a,b,p,p+VECTOR_X)
 						if i and i.x > p.x:
@@ -615,7 +616,7 @@ class Polygon(object):
 			while intersecting:
 				intersecting = False
 				for hole in holes:
-					for a,b in zip(hole, hole[1:]) + [(hole[-1],hole[0])]:
+					for a,b in list(zip(hole, hole[1:])) + [(hole[-1],hole[0])]:
 						i = intersect_lineseg_lineseg(d_a, d_b, a, b)
 						if i and i not in [a,b]:
 							if not closest_intersection or (closest_intersection - d_b).length_squared > (i-d_b).length_squared:
@@ -679,10 +680,10 @@ class Polygon(object):
 
 
 			# find the next notch index
-			i_extend = next( ( i for i in range(i_start+1, len(p)) + range(0,i_start+1) if not point_orientation( p[i-1], p[i], p[(i+1) % len(p)] ) ) )
+			i_extend = next( ( i for i in itertools.chain(range(i_start+1, len(p)), range(0,i_start+1)) if not point_orientation( p[i-1], p[i], p[(i+1) % len(p)] ) ) )
 
 			# build provisional l
-			l = range(i_start,i_extend+1) if i_start < i_extend else range(i_start,len(p)) + range(0,i_extend+1)
+			l = list(range(i_start,i_extend+1)) if i_start < i_extend else list(range(i_start,len(p))) + list(range(0,i_extend+1))
 
 			#print "l=%s" % l
 
@@ -695,9 +696,9 @@ class Polygon(object):
 			#print "l'=%s" % l
 
 			# try to extend l counter-clockwise - find next notch
-			i_extend2 = next( ( i for i in range(i_start,-1,-1) + range(len(p)-1,i_start, -1) if not point_orientation( p[i-1], p[i], p[(i+1) % len(p)] ) ) )
+			i_extend2 = next( ( i for i in itertools.chain((i_start,-1,-1), range(len(p)-1,i_start, -1)) if not point_orientation( p[i-1], p[i], p[(i+1) % len(p)] ) ) )
 
-			l2 =  range(i_extend2,len(p)) + range(0,i_start) if i_extend2 > i_start else range(i_extend2,i_start)
+			l2 =  list(range(i_extend2,len(p))) + list(range(0,i_start)) if i_extend2 > i_start else list(range(i_extend2,i_start))
 
 			#print "l2=%s" % l2
 
@@ -779,7 +780,7 @@ class Polygon(object):
 	@staticmethod
 	def is_clockwise_s(pts):
 		# get index of point with minimal x value
-		i_min = min(xrange(len(pts)), key=lambda i: pts[i].x)
+		i_min = min(range(len(pts)), key=lambda i: pts[i].x)
 
 		# get previous, current and next points
 		a = pts[i_min-1]
@@ -825,7 +826,7 @@ class Polygon(object):
 		"""Checks if the polygon defined by the point list pts contains the point p"""
 
 		# see if we find a line segment that p is on
-		for a,b in zip(pts[0:], pts[1:]) + [(pts[-1], pts[0])]:
+		for a,b in list(zip(pts[0:], pts[1:])) + [(pts[-1], pts[0])]:
 			d = distance_point_lineseg_squared(p, a, b)
 			if d < EPSILON * EPSILON: return 2
 
