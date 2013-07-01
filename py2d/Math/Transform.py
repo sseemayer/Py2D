@@ -13,21 +13,21 @@ class Transform(object):
 		"""Get a new unit tranformation"""
 		return Transform([[1, 0, 0],
 		                  [0, 1, 0],
-			          [0, 0, 1]])
+		                  [0, 0, 1]])
 
 	@staticmethod
 	def move(dx, dy):
 		"""Get a transformation that moves by dx, dy"""
 		return Transform([[1, 0, dx],
 		                  [0, 1, dy],
-			          [0, 0, 1]])
+		                  [0, 0, 1]])
 
 	@staticmethod
 	def rotate(phi):
 		"""Get a transformation that rotates by phi"""
 		return Transform([[math.cos(phi), -math.sin(phi), 0],
 		                  [math.sin(phi), math.cos(phi), 0],
-			          [0, 0, 1]])
+		                  [0, 0, 1]])
 
 	@staticmethod
 	def rotate_around(cx, cy, phi):
@@ -39,20 +39,20 @@ class Transform(object):
 		"""Get a transformation that scales by sx, sy"""
 		return Transform([[sx, 0, 0],
 		                  [0, sy, 0],
-			          [0, 0, 1]])
+		                  [0, 0, 1]])
 	@staticmethod
 	def mirror_x():
 		"""Get a transformation that mirrors along the x axis"""
 		return Transform([[-1, 0, 0],
-				  [ 0, 1, 0],
-				  [ 0, 0, 1]])
+		                  [ 0, 1, 0],
+		                  [ 0, 0, 1]])
 
 	@staticmethod
 	def mirror_y():
 		"""Get a transformation that mirrors along the y axis"""
 		return Transform([[ 1, 0, 0],
-				  [ 0,-1, 0],
-				  [ 0, 0, 1]])
+		                  [ 0,-1, 0],
+		                  [ 0, 0, 1]])
 
 	def __add__(self, b):
 		t = Transform()
