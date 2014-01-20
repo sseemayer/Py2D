@@ -78,6 +78,9 @@ class Vector(object):
 	def __truediv__(self, val):
 		return Vector(self.x / val, self.y / val)
 
+	def __div__(self, val):
+		return Vector(self.x / val, self.y / val)
+
 	def __repr__(self):
 		return "Vector(%.3f, %.3f)" % (self.x, self.y)
 
