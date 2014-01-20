@@ -833,8 +833,9 @@ class Polygon(object):
 		# p is not on the boundary, cast ray and intersect to see if we are inside
 		intersections = set(intersect_poly_ray(pts, p, p + Vector(1,0)))
 
+
 		# filter intersection points that are boundary points
-		for int_point in filter(lambda x: x in pts, intersections):
+		for int_point in set(filter(lambda x: x in pts, intersections)):
 
 			i = pts.index(int_point)
 			prv = pts[i-1]
