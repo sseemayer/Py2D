@@ -75,6 +75,9 @@ class Vector(object):
 		else:
 			return Vector(self.x * val, self.y * val)
 
+	def __truediv__(self, val):
+		return Vector(self.x / val, self.y / val)
+
 	def __div__(self, val):
 		return Vector(self.x / val, self.y / val)
 

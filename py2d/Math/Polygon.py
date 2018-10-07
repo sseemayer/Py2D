@@ -211,10 +211,10 @@ class Polygon(object):
 
 
 		# extend vector rings by intersections
-		for k, v in intersections_a.iteritems():
+		for k, v in intersections_a.items():
 			inorder_extend(v_a, k[0], k[1], v)
 
-		for k, v in intersections_b.iteritems():
+		for k, v in intersections_b.items():
 			inorder_extend(v_b, k[0], k[1], v)
 
 
@@ -249,7 +249,7 @@ class Polygon(object):
 
 		output = []
 		while edge_fragments:
-			start = edge_fragments.keys()[0]
+			start = list(edge_fragments.keys())[0]
 			current = edge_fragments[start][0]
 			sequence = [start]
 
@@ -427,7 +427,7 @@ class Polygon(object):
 
 
 			# add self-intersection points to poly
-			for k, v in ints.iteritems():
+			for k, v in ints.items():
 				inorder_extend(pts, k[0], k[1], v)
 
 			# build a list of loops
@@ -833,8 +833,9 @@ class Polygon(object):
 		# p is not on the boundary, cast ray and intersect to see if we are inside
 		intersections = set(intersect_poly_ray(pts, p, p + Vector(1,0)))
 
+
 		# filter intersection points that are boundary points
-		for int_point in filter(lambda x: x in pts, intersections):
+		for int_point in set(filter(lambda x: x in pts, intersections)):
 
 			i = pts.index(int_point)
 			prv = pts[i-1]
