@@ -1,3 +1,5 @@
+# cython: language_level=3
+
 """Bezier curve tools.
 
 All functions in this module assume the following naming:

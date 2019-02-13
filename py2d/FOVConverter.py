@@ -1,4 +1,7 @@
+# cython: language_level=3
+
 """Conversion of map data structures to obstructor data"""
+
 import Math
 
 def convert_tilemap(width, height, blocking_function, tile_width, tile_height):

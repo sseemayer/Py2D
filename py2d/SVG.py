@@ -1,3 +1,5 @@
+# cython: language_level=3
+
 """SVG to Polygon conversion
 
 This is still experimental code and only a tiny subset of SVG is supported.

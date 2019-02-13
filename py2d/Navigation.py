@@ -1,3 +1,5 @@
+# cython: language_level=3
+
 """Navigation Mesh generation and navigation."""
 
 import itertools

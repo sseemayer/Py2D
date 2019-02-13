@@ -1,3 +1,5 @@
+# cython: language_level=3
+
 import math
 import itertools
 from collections import defaultdict
