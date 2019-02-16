@@ -1,9 +1,7 @@
+from setuptools import setup, Extension
 
-from distutils.core import setup
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
-
-setup(	name='py2d',
+setup(
+	name='py2d',
 	version='0.1',
 	description='Py2D library of 2D-game-related algorithms',
 	url='http://www.github.com/sseemayer/py2d',
@@ -12,7 +10,12 @@ setup(	name='py2d',
 	author_email='mail@semicolonsoftware.de',
 
 	packages=['py2d', 'py2d.Math'],
-	cmdclass = {'build_ext': build_ext},
+	setup_requires=[
+		# Setuptools 18.0 properly handles Cython extensions.
+		'setuptools>=18.0',
+		'wheel',
+		'cython',
+	],
 	ext_modules = [
 		Extension("py2d.Bezier", ["py2d/Bezier.py"]),
 		Extension("py2d.FOV", ["py2d/FOV.py"]),

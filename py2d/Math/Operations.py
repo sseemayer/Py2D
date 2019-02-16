@@ -1,3 +1,5 @@
+# cython: language_level=3
+
 import math
 
 from py2d.Math.Vector import *

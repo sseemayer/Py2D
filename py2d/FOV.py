@@ -1,4 +1,7 @@
+# cython: language_level=3
+
 """Calculation of polygonal Field of View (FOV)"""
+
 import functools
 import py2d.Math
 

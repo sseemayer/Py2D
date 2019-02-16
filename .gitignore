@@ -3,6 +3,7 @@ MANIFEST
 *.py[co]
 *.c
 *.so
+/.eggs/
 
 # Packages
 *.egg
